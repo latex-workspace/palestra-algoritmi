@@ -1,0 +1,250 @@
+%&../.preamble
+\endofdump
+
+\usetikzlibrary{external}
+\tikzset{external/system call={pdflatex --shell-escape --fmt=../.preamble --halt-on-error -jobname "\image" "\endofdump\texsource"}}
+\tikzexternalize[prefix=tikz/]
+
+\title{Pelstra di algoritmi}
+\author{Marini Mattia}
+\date{20 ottobre 2025}
+
+\begin{document}
+\maketitle
+\license{Palestra di algoritmi}
+\tableofcontents
+\newpage
+
+\section{Introduzione}
+Qui di seguito sono raccolte nozioni di base per affrontare ogni probrema relativo alle \textit{OII}
+
+\subsection{Basi cpp}
+In ogni problema è necessario effettuare input/output su file\footnote{In realtà a volte è sufficiente implementare il body di una funzione oppure la parte relativa all'output viene fornita}. Ci sono diversi modi per eseguire ciò.
+\subsubsection{Input metodo 1 (consigliato)}
+Vedi file \href{run:./files/teoria/input1/}{input1.cpp}
+\vskip3mm
+L'idea è di creare un oggeto \verb|ifstream| e \verb|ofstream| che poi potremmo utilizzare in maniera totalmente analoga a, rispettivamente, \verb|cin| e \verb|cout|
+\begin{lstlisting}[language = cpp, frame = none]
+std::ifstream in("input.txt");
+in >> a >> b;
+
+std::ifstream out("output.txt");
+out << a << b
+\end{lstlisting}
+Esiste un trucco per velocizzare notevolmente la velocità di input/output utilizzando questo metodo. In particolare, è sufficiente appendere le seguenti righe prima di scrivere o leggere su files:
+\begin{lstlisting}[language = cpp, frame = none]
+ios_base::sync_with_stdio(false); 
+cin.tie(NULL);
+\end{lstlisting}
+Tuttavia se il problema sfora i limiti di tempo, con ogni probabilità è la soluzione a non essere corretta, non le operazioni di input/output. Queste righe possono essere utili per scalare la classifica sui siti di allenamento, non per altro
+
+\subsubsection{Input metodo 2}
+Vedi file \href{run:./files/teoria/input/}{input2.cpp}
+\vskip3mm
+Questo metodo è più "vecchio" e meno consigliato. L'idea è di utilizzare le funzioni \verb|freopen| per reindirizzare lo standard input/output su file:
+\begin{lstlisting}[language = cpp, frame = none]
+FILE *in = fopen("input.txt", "r");
+fscanf(in, "%d %d", &a, &b);
+
+FILE *out = fopen("output.txt", "w");
+fprintf(out, "%d %d\n", a, b);
+\end{lstlisting}
+dove le funzioni \verb|fprintf| e \verb|fscanf| prendono come argomenti:
+\begin{itemize}
+	\item Il puntatore ad un file \verb|FILE *|
+	\item Una stringa \verb|format|, contenente una serie di specificatori, preceduti da "{\ttfamily \%}"
+	      \begin{itemize}
+		      \item \verb|d|: decimal, numero intero
+		      \item \verb|f|: float
+		      \item \verb|s|: stringa c-style, in particolare \verb|char *|
+	      \end{itemize}
+	\item Una serie variabili che corrispondono a quanto indicato in \verb|format|. Nel caso di \verb|scanf| è richiesto l'indirizzo di memoria di queset
+\end{itemize}
+\subsubsection{Ultra fast io}
+Ci sono infine alcuni metodi per velocizzare l'input al massimo, utili per sprepere la perfomance al massimo, per arrivare nei primi in classifica. In particolare, questi metodi si basano sull'uso delle funzioni \verb|getchat_unlocked()| e \verb|putchar_unlocked()|
+\begin{lstlisting}[language = cpp, frame = none]
+inline static int scanInt(FILE *file = stdin) {
+  int n = 0;
+  int neg = 1;
+  char c = getc_unlocked(file);
+  if (c == '-')
+    neg = -1;
+  while (c < '0' || c > '9') {
+    c = getc_unlocked(file);
+    if (c == '-')
+      neg = -1;
+  }
+  while (c >= '0' && c <= '9') {
+    n = (n << 3) + (n << 1) + c - '0';
+    c = getc_unlocked(file);
+  }
+  return n * neg;
+}
+
+inline static void writeInt(int v, FILE *file = stdout) {
+  static char buf[14];
+  int p = 0;
+  if (v == 0) {
+    putc_unlocked('0', file);
+    return;
+  }
+  if (v < 0) {
+    putc_unlocked('-', file);
+    v = -v;
+  }
+  while (v) {
+    buf[p++] = v % 10;
+    v /= 10;
+  }
+  while (p--) {
+    putc_unlocked(buf[p] + '0', file);
+  }
+}
+
+inline static int getString(char *buf, FILE *file = stdin) {
+  std::string s;
+  int c = getc_unlocked(file);
+
+  // Skip leading whitespace
+  while (c != EOF && (c == ' ' || c == '\n' || c == '\t' || c == '\r'))
+    c = getc_unlocked(file);
+
+  // Read until next whitespace or EOF
+  int index = 0;
+  while (c != EOF && c != ' ' && c != '\n' && c != '\t' && c != '\r') {
+    buf[index++] = static_cast<char>(c);
+    c = getc_unlocked(file);
+  }
+
+  return index;
+}
+
+inline static void putString(const std::string &s, FILE *file = stdout) {
+  for (size_t i = 0; i < s.size(); i++)
+    putc_unlocked(s[i], file);
+}
+\end{lstlisting}
+Nota che le funzioni \verb|putc_unlocked| e \verb|getc_unlocked| sono disponibili solo in sistemi operativi unix(MacOs e Linux). Si possono usare in tranquillità dato che i server che testano il nostro codice sono tutti linux, ma il codice potrebbe non compilare in locale
+
+\subsection{Complessità}
+Il punto focale delle olimpiadi di informatica è non solo quello di scrivere algoritmi funzionanti, bensì efficienti. Per questa ragione è importante fornire critesi secondo i quali valutare la velocità d'esecuzione degli algoritmi
+\vskip3mm
+La logica di base sta nel relazionare il \textit{numero di iterazioni} che un algoritmo deve eseguire alla \textit{dimensione dell'input}.
+
+\subsubsection{Esempio 1}
+Supponiamo di avere un algoritmo per trovare il massimo in un vettore di $ n $ elementi. L'algoritmo fa quanto segue:
+\begin{itemize}
+	\item Inizializza una variabile \verb|max| al primo elemento del vettore
+	\item Per ogni elemento del vettore controlla se è maggiore di \verb|max|. In caso affermativo aggiorna \verb|max| all'elemento corrente
+	\item Ritorna \verb|max|
+\end{itemize}
+\begin{algoritmo*}{Massimo vettore}
+	\begin{algorithm}[H]
+		\SetKwFunction{Max}{\Int max}
+		\Fn{ \Max{$\Int\ v[]$}}{
+			$max \gets v\left[0\right]$\;
+			\For{$i = 0$ \KwTo $v.size - 1$}{
+				\If{$v\left[i\right] > max$}{
+					$max \gets v\left[i\right]$\;
+				}
+			}
+			\Return{$max$}\;
+		}
+	\end{algorithm}
+\end{algoritmo*}
+In questo caso notiamo come siano necessarie $ n $ \textit{iterazioni} perchè l'algoritmo termini (dove $ n $ è la dimensione del vettore $ v $). Abbiamo quindi rapportato la dimensione dell'input alla complessità temporale dell'algoritmo
+\vskip3mm
+In questo caso, si dice che la complessità dell'algoritmo è $ \Theta \left(n\right) $
+
+\subsubsection{Esempio 2}
+Supponiamo di avere un algorimo che debba eseguire una moltiplicazione applicando la proprietà distributiva:
+\[
+	\left(a + b + c\right)\cdot \left(d + e + f\right)
+\]
+secondo la proprietà distributiva questo diventa:
+\[
+	\underbracket[0.1ex]{\left(ad + ae + af\right)}_{A}+ \underbracket[0.1ex]{\left(bd + be + bf\right)}_{B} + \underbracket[0.1ex]{\left(cd + ce + cf\right)}_{C}
+\]
+ritornare un vettore che contenga i coefficienti $ \left(A,B,C\right) $
+
+\begin{algoritmo*}{Moltiplicazione distributiva}
+	\begin{algorithm}[H]
+		\SetKwFunction{Mul}{\Int mul}
+		\Fn{ \Mul{$\Int\ v_1[]$, $\Int\ v_2[]$}}{
+		$\Int\; rv$ = $\Int[0 \ldots v1.size]$\;
+		\For{$i = 0$ \KwTo $v_1.size - 1$}{
+			$ rv\left[i\right] = 0$\;
+			\For{$j = 0$ \KwTo $v_2.size - 1$}{
+				$ rv += v_1\left[i\right] \cdot  v_2\left[j\right] $\;
+			}
+		}
+		\Return{$rv$}\;
+		}
+	\end{algorithm}
+\end{algoritmo*}
+Siccome per ogni elemento di $ v_1 $ devo scorrere interamente $ v_2 $, dovro ripetere $ v_2 * v_1 $ volte il body del ciclo.
+\vskip3mm
+In questo caso, se i due vettori hanno dimensione $ n $, si dice che la complessità dell'algoritmo è $ \Theta \left(n^2 \right) $
+
+\subsubsection*{Notazione $ \Omega $, $ \Theta $, $ O $}
+In generale, per valutare la complessità di un algoritmo siamo interessati a più scenari:
+\begin{itemize}
+	\item Nel peggiore dei casi, l'algoritmo che complessità ha? $ \rightarrow  $ notazione $ O $
+	\item Nel migliore dei casi, l'algoritmo che complessità ha?$ \rightarrow  $ notazione $ \Omega  $
+	\item Nel "caso medio", l'algoritmo che complessità ha?$ \rightarrow  $ notazione $ \Theta $
+\end{itemize}
+Nota bene: nella maggio parte dei casi siamo interessati alla coplessità nel caso pessimo $ O $ in quanto non possiamo escludere che questo si presenti nel dataset.
+\vskip3mm
+Per capire meglio la differenza fra caso ottimo e caso pessimo prendiamo in analisi l'algoritmo di \textit{insertion sort}:
+
+\begin{algoritmo*}{Insertion Sort}
+	\begin{algorithm}[H]
+		\SetKwFunction{InsertSort}{insertionSort}
+		\Fn{\Int \InsertSort{$\Int\ v[]$}}{
+			\For{$i = 1$ \KwTo $v.size - 1$}{
+				$\Int\ key = v[i]$\;
+				$\Int\ j = i - 1$\;
+				\While{$j \geq 0$  \And  $v[j] > key$}{
+					$v[j + 1] = v[j]$\;
+					$j = j - 1$\;
+				}
+				$v[j + 1] = key$\;
+			}
+			\Return{$v$}\;
+		}
+	\end{algorithm}
+\end{algoritmo*}
+In questo caso, dato un vettore lungo $ n $, abbiamo due casi estremi:
+\begin{itemize}
+	\item Il vettore è ordinato in modo crescente
+	\item Il vettore è ordinato in modo decrescente
+\end{itemize}
+Nel primo caso l'algoritmo non entrerà mai nel ciclo while e dunque scorrerà il vettore una singola volta, originando una compessità di $ \Omega \left(n\right) $.
+\vskip3mm
+Nel secondo caso l'algoritmo dovrà per ogni elemento del vettore scorrere (quasi) tutto il vettore stesso, originando una complessità di $ O\left(n^2 \right) $
+
+\subsection{Struttura problemi}
+Ogni problema delle OII e delle OIS ha una struttura simile e si compone come segue:
+\begin{itemize}
+	\item Descrizione problema
+	\item Descrizione dati di input
+	\item Descrizione formato output
+	\item Esempi
+	\item Testcase
+\end{itemize}
+In particolare, il punteggio viene assegnato in base ai testcase che il nostro codice passa. Dobbiamo quindi scrivere un codice che risolva un dato problema stampando in output la soluzione. La correzione funziona come segue:
+\begin{itemize}
+	\item I testcase sono raggruppati in un dato numero di \textit{gruppi}
+	\item Ad ogni gruppo di \textit{testcase} è assegnato un punteggio e delle assunzioni. Ad esempio, ci può essere detto che i dati in input, in un dato gruppo non superano una certa dimensione o sono strutturati in un modo particolare
+	\item Se all'interno di un gruppo i testcase sono tutti passati (output corretto), allora vengono assegnati i punti, altrimenti no
+\end{itemize}
+Si noti che per passare un testcase non è sufficiente che l'output sia corretto, ma il tempo di esecuzione e la memoria utilizzata devono essere entro i limiti previsti, specificati nel testo del problema
+
+\section{Programmazione dinamica}
+
+\subsection{Problemi dp}
+
+\subsubsection{Police 3 (\protect{\href{https://training.olinfo.it/task/ois_police3}{\ttfamily police3}})}
+
+
+\end{document}
