@@ -242,9 +242,449 @@ Si noti che per passare un testcase non è sufficiente che l'output sia corretto
 
 \section{Programmazione dinamica}
 
-\subsection{Problemi dp}
+\subsection{Donimo}
+Quanti modi ho di disporre tasselle di domino in una scacchiera $ 2 \times n $?
 
-\subsubsection{Police 3 (\protect{\href{https://training.olinfo.it/task/ois_police3}{\ttfamily police3}})}
+\vskip3mm\sfblue{Soluzione}\vskip3mm
+\begin{itemize}
+	\item Salvo in $ dp\left[i\right] $ il numero di combinazioni che ci sono per un rettangolo $ 2 \times i $
+	\item Ho due opzioni:
+	      \begin{itemize}
+		      \item Metto 2 tessere in orizzontale, allora $ dp\left[i\right] = dp\left[i-2\right] $
+		      \item Metto 1 tessera in verticale, allora $ dp\left[i\right] = dp\left[i-1\right] $
+	      \end{itemize}
+	\item Quindi $ dp\left[i\right] = dp\left[i-1\right] + dp\left[i-2\right] $
+	\item La soluzione è $ \operatorname{Fib}\left(n\right) $
+\end{itemize}
+\subsection{Hateville}
+Ho un vettore di prezzi. Se prendo un prezzo $ v\left[i\right] $ non posso prendere $ v\left[i-1\right] $ e $ v\left[i+1\right] $. Trova prezzo massimo
+
+\vskip3mm\sfblue{Soluzione}\vskip3mm
+\begin{itemize}
+	\item Salvo in $ dp\left[i\right] $ il prezzo massimo che posso ottenere con i vicini $ \le i $
+	\item Ho due opzioni:
+	      \begin{itemize}
+		      \item Non prendo $ v\left[i\right] $, allora il prezzo è $ dp\left[i-1\right] $
+		      \item Prendo $ v\left[i\right] $, allora il prezzo è $ dp\left[i-1\right] + v\left[i\right] $
+	      \end{itemize}
+\end{itemize}
+\subsection{Zaino}\label{zaino}
+Zaino ha capacità $ C $, ho $ n $ pezzi di peso $ w\left[i\right] $ e profitto $ p\left[i\right] $. Trova profitto massimo
+
+\vskip3mm\sfblue{Soluzione}\vskip3mm
+\begin{itemize}
+	\item Crea matrice $ n \times C $ in cui si salva $ dp\left[i\right]\left[j\right] $ il profitto massimo che si può ottenere con i pezzi $ \le i $ e capacità $ \le j $
+	\item Ho due opzioni:
+	      \begin{itemize}
+		      \item Prendo pezzo $ \left(i,j\right) $, allora il prezzo migliore è $ dp\left[i-1\right]\left[j - w\left[i\right]\right] + p\left[i\right] $
+		      \item Non lo prendo, allora il prezzo è $ dp\left[i-1\right]\left[j\right] $
+	      \end{itemize}
+	\item Posso ottimizzare lo spazio tenendo salvato solo due righe della matrice, la $ i $ e la $ i-1 $
+\end{itemize}
+\subsection{Zaino umbound}
+Vedi \hyperref[zaino]{zaino}, solo che non c'è limite al numero di oggetti che uno puo prendere
+
+\vskip3mm\sfblue{Soluzione}\vskip3mm
+\begin{itemize}
+	\item Vettore $ dp $ in cui salvo in $ i $ il profitto massimo per uno zaino grande $ i $
+	\item Per ogni peso item $ x $, il profitto massimo è $ p\left[x\right] + dp\left[i - w\left[x\right]\right] $
+	\item $ dp\left[i\right] $ è il massimo fra tutti i valori trovati al punto 2
+\end{itemize}
+\subsection{LCS}
+Date due stringhe $ U $ e $ T $, trova la \underline{sottosequenza} massimale. Una sottosequenza è una stringa che si ottiene da un'altra selezionandone solo alcuni caratteri (non necessariamente contigui, ma mantenendone l'ordine).
+\vskip3mm\sfblue{Soluzione}\vskip3mm
+\begin{itemize}
+	\item Tabella $ dp $ con $ U $ su un lato e $ T $ sull'altro. In $ dp\left[i\right]\left[j\right] $ salvo la lunghezza della $ LCS $ fra la sottostringa $ U\left[0,i\right] $ e $ T\left[0, j\right] $
+	\item Ho due opzioni:
+	      \begin{itemize}
+		      \item $ U\left[i\right] = T[j] $, allora $ dp\left[i\right]\left[j\right] = dp\left[i-1\right]\left[j-1\right] +1 $ (aggiungo un carattere alla LCS più corta di 1)
+		      \item $  U\left[i\right] \neq T[j] $  allora $ dp\left[i\right]\left[j\right] = \operatorname{max}\left(dp\left[i-1\right]\left[j\right], dp\left[i\right]\left[j-1\right]\right) $. Vedi immagine
+	      \end{itemize}
+\end{itemize}
+
+\begin{center}
+	\begin{tikzpicture}[scale=0.7]
+		\draw [fill=mutedgreen!50](6, 0)rectangle ++ (2,1);
+		\draw (0,0)grid(8,1);
+
+		\draw [fill=mutedred!50](6, -3)rectangle ++ (4,1);
+		\draw (0,-3)grid(10,-2);
+
+		\begin{scope}[shift={(0.5,0.5)}]
+			\node at (-1, 0) {$ U $};
+
+			\node (1) at (0,0)  {a};
+			\node (2) at (1,0)  {u};
+			\node (3) at (2,0)  {t};
+			\node (4) at (3,0)  {s};
+			\node (5) at (4,0)  {s};
+			\node (6) at (5,0)  {g};
+			\node (7) at (6,0)  {n};
+			\node (18) at (7,0)  {k};
+			\node [anchor = south] at (7,0.5)  {$ i $};
+
+			\node at (-1, -3) {$ V $};
+
+			\node (8)  at (0,-3)  {w};
+			\node (9)  at (1,-3)  {a};
+			\node (10) at (2,-3)  {t};
+			\node (11) at (3,-3)  {f};
+			\node (12) at (4,-3)  {x};
+			\node (13) at (5,-3)  {m};
+			\node (14) at (6,-3)  {g};
+			\node (15) at (7,-3)  {o};
+			\node (16) at (8,-3)  {i};
+			\node (17) at (9,-3)  {m};
+			\node [anchor = south] at (6,-2.5)  {$ j $};
+			% \node (15) at (7,-3)  {o};
+			% \node (16) at (8,-3)  {i};
+
+		\end{scope}
+
+		\node (lcs)[circle] at (2,-1) {lcs};
+
+		\draw (lcs)edge(1.south) edge (3.south) edge(6.south);
+		\draw (lcs)edge(9.north) edge (10.north) edge(14.north);
+
+	\end{tikzpicture}
+\end{center}
+
+Per migliorare la soluzione, se i caratteri sono diversi, devo aggiungere un carattere che sia nell'insieme dei caratteri dopo l'ultimo carattere comune. Quindi ho che
+\begin{itemize}
+	\item A $ T $, devo aggiungere un carattere che appartiene all'insieme rosso
+	\item A $ U $, devo aggiungere un carattere che appartiene all'insieme verde
+\end{itemize}
+Chiaramente la cosa è asimmetrica, per questo devo controllare $ dp\left[i-1\right]\left[j\right] $ e $ dp\left[i\right]\left[j-1\right] $
+\vskip3mm
+\sfblue{Dimostrazione formale}: dobbiamo dimostrare che date due parole $ U \left(u_1,\ldots ,u_i\right) $ e $ V\left(v_1 , \ldots v_j\right) $ e $ X \left(x_1 , \ldots x_k\right) $ allora
+\begin{itemize}
+	\item Se $ u_i = v_j $  allora
+	      \begin{gather*}
+		      u_i = v_j = x_k \\
+		      X\left(K-1\right) \in \mathcal{LCS}\left(U\left(i-1\right), V\left(j-1\right)\right)
+	      \end{gather*}
+	\item Se $ u_i \neq v_j $ e $ x_k \neq  u_i $ allora
+	      \[
+		      X \in \mathcal{LCS}\left(U\left(i-1\right), V \right)
+	      \]
+	\item Se $ u_i \neq v_j $ e $ x_k \neq  v_j $ allora
+	      \[
+		      X \in \mathcal{LCS}\left(U, V\left(j-1\right) \right)
+	      \]
+\end{itemize}
+
+\begin{minipage}[t]{0.48\textwidth}
+	\begin{center}
+		\begin{tikzpicture}[scale=0.7]
+			\draw (0,0)grid(8,1);
+			\draw [fill=mutedgreen!50](7, 0)rectangle ++ (1,1);
+
+			\draw (0,-3)grid(7,-2);
+			\draw [fill=mutedred!50](6, -3)rectangle ++ (1,1);
+
+			\begin{scope}[shift={(0.5,0.5)}]
+				\node at (-1, 0) {$ U $};
+
+				\node (1) at (0,0)  {a};
+				\node (2) at (1,0)  {u};
+				\node (3) at (2,0)  {t};
+				\node (4) at (3,0)  {s};
+				\node (5) at (4,0)  {s};
+				\node (6) at (5,0)  {g};
+				\node (7) at (6,0)  {n};
+				\node (17) at (7,0)  {k};
+				\node [anchor = south] at (7,0.5)  {$ i $};
+
+				\node at (-1, -3) {$ V $};
+
+				\node (8)  at (0,-3)  {w};
+				\node (9)  at (1,-3)  {a};
+				\node (10) at (2,-3)  {t};
+				\node (11) at (3,-3)  {f};
+				\node (12) at (4,-3)  {x};
+				\node (13) at (5,-3)  {m};
+				\node (14) at (6,-3)  {g};
+				\node [anchor = south] at (6,-2.5)  {$ j $};
+				% \node (15) at (7,-3)  {o};
+				% \node (16) at (8,-3)  {i};
+
+			\end{scope}
+
+			\node (lcs)[circle] at (2,-1) {lcs};
+
+			\draw (lcs)edge(1.south) edge (3.south) edge(6.south);
+			\draw (lcs)edge(9.north) edge (10.north) edge(14.north);
+
+		\end{tikzpicture}
+	\end{center}
+\end{minipage}
+%
+\begin{minipage}[t]{0.48\textwidth}
+	\begin{center}
+		\begin{tikzpicture}[scale=0.7]
+
+			\draw (0,0)grid(6,1);
+			\draw [fill=mutedblue!50](5, 0)rectangle(6,1);
+
+			\draw (0,-3)grid(7,-2);
+			\draw [fill=mutedblue!50](6, -3)rectangle(7,-2);
+
+			\begin{scope}[shift={(0.5,0.5)}]
+				\node at (-1, 0) {$ U $};
+
+				\node (1) at (0,0)  {a};
+				\node (2) at (1,0)  {u};
+				\node (3) at (2,0)  {t};
+				\node (4) at (3,0)  {s};
+				\node (5) at (4,0)  {s};
+				\node (6) at (5,0)  {g};
+				\node [anchor = south] at (5,0.5)  {$ i $};
+
+				\node at (-1, -3) {$ V $};
+
+				\node (8)  at (0,-3)  {w};
+				\node (9)  at (1,-3)  {a};
+				\node (10) at (2,-3)  {t};
+				\node (11) at (3,-3)  {f};
+				\node (12) at (4,-3)  {x};
+				\node (13) at (5,-3)  {m};
+				\node (14) at (6,-3)  {g};
+				\node [anchor = south] at (6,-2.5)  {$ j $};
+				% \node (15) at (7,-3)  {o};
+				% \node (16) at (8,-3)  {i};
+
+			\end{scope}
+
+			\node (lcs)[circle] at (2,-1) {lcs};
+
+			\draw (lcs)edge(1.south) edge (3.south) edge(6.south);
+			\draw (lcs)edge(9.north) edge (10.north) edge(14.north);
+
+		\end{tikzpicture}
+	\end{center}
+\end{minipage}
+
+
+\subsection{Occorrenza k approssimata}
+Data una stringa $ t $ e una $ p $, diciamo che la distanza $ k $ di $ p $ da $ t $ è il numero \underline{minimo} di \textit{inserimenti, eliminazioni e scambi} che dobbiamo fare in $ t $ per far si che $ t == p $.
+\[
+	t = \text{ "scempio" }, \quad p = \text{ esempio } \rightarrow k = 2
+\]
+ad esempio, scambiando la "s" e "c" di \textit{scempio} in "e" ed "s" rispettivamente
+\vskip3mm
+Il problma sta nel trovare in un testo $ t $, la distanza minima di un pattern $ p $ da una sua qualsiasi sottostringa.
+\vskip3mm
+Ciò equivale a trovare quanti inserimenti, rimozioni e scambi devo fare \underline{nel testo} per far si che il pattern diventi una sua sottostringa
+\vskip3mm\sfblue{Soluzione}\vskip3mm
+\begin{itemize}
+	\item Inizializza matrice che ha $ p $ in verticale e $ t $ in orizzontale
+	\item In $ dp\left[i\right]\left[j\right] $ si salva \textit{il minor valore di k per far si che $ p\left[0, i\right] $ sia sottostringa di $ t\left[0, j\right] $ che finisca in $ j $}
+	\item Se $ p\left[i\right] == t\left[j\right] $ allora non serviranno altre mosse per riportare la soluzione di $ dp\left[i-1\right]\left[j-1\right] $ alla soluzione corrente
+	\item Se $ p\left[i\right] \neq  t\left[j\right] $  allora posso fare 3 cose:
+\end{itemize}
+
+\begin{center}
+	% \includegraphics{images/K approx.pdf }
+	\begin{tikzpicture}[scale=0.6]
+
+		\begin{scope}
+			\draw [fill=mutedred!50](1,4)rectangle(4,3);
+			\draw [fill=mutedgreen!50](0,0)rectangle(1,3);
+
+			\draw (0,0)grid(7,4);
+
+			\draw [thick, mutedblue](0,0)rectangle(1,3);
+			\draw [thick, mutedblue](1,4)rectangle(3,3);
+
+			\begin{scope}[shift={(0.5,0.5)}]
+				\node at (0,2){b};
+				\node at (0,1){a};
+				\node at (0,0){b};
+
+				\node at (1,3){a};
+				\node at (2,3){b};
+				\node at (3,3){a};
+				\node at (4,3){b};
+				\node at (5,3){a};
+				\node at (6,3){g};
+
+				\node at (3,0){?};
+				\node at (2,0){$ \rightarrow $};
+
+				% \node at[3,0] {Fai coincidere bab con ab e poi elimina a};
+				\node at (3,-1) {+1};
+				\node [align = center] at (3,-2) {Fai coincidere bab con ab\\ e poi elimina a};
+			\end{scope}
+		\end{scope}
+
+		\begin{scope}[shift={(8,0)}]
+			\draw [fill=mutedred!50](1,4)rectangle(4,3);
+			\draw [fill=mutedgreen!50](0,0)rectangle(1,3);
+
+			\draw (0,0)grid(7,4);
+
+			\draw [thick, mutedblue](0,1)rectangle(1,3);
+			\draw [thick, mutedblue](1,4)rectangle(4,3);
+
+			\begin{scope}[shift={(0.5,0.5)}]
+				\node at (0,2){b};
+				\node at (0,1){a};
+				\node at (0,0){b};
+
+				\node at (1,3){a};
+				\node at (2,3){b};
+				\node at (3,3){a};
+				\node at (4,3){b};
+				\node at (5,3){a};
+				\node at (6,3){g};
+
+				\node at (3,0){?};
+				\node at (3,1){$ \downarrow $};
+
+				\node at (3,-1) {+1};
+				\node [align = center] at (3,-2) {Fai coincidere ba con aba\\ e poi aggiungi b};
+			\end{scope}
+		\end{scope}
+
+		\begin{scope}[shift={(16,0)}]
+			\draw [fill=mutedred!50](1,4)rectangle(4,3);
+			\draw [fill=mutedgreen!50](0,0)rectangle(1,3);
+
+			\draw (0,0)grid(7,4);
+
+			\draw [thick, mutedblue](0,1)rectangle(1,3);
+			\draw [thick, mutedblue](1,4)rectangle(3,3);
+
+			\begin{scope}[shift={(0.5,0.5)}]
+				\node at (0,2){b};
+				\node at (0,1){a};
+				\node at (0,0){b};
+
+				\node at (1,3){a};
+				\node at (2,3){b};
+				\node at (3,3){a};
+				\node at (4,3){b};
+				\node at (5,3){a};
+				\node at (6,3){g};
+
+				\node at (3,0){?};
+				\node at (2,1){$ \searrow $};
+
+				\node at (3,-1) {+1};
+				\node [align = center] at (3,-2) {Fai coincidere ba con ab\\ e poi cambia a in b};
+			\end{scope}
+		\end{scope}
+
+	\end{tikzpicture}
+\end{center}
+
+La soluzione migliore è data dal minimo valore nell'ultima riga della tabella
+\vskip3mm
+Nota che la prima riga e la prima colonna vanno riempite rispettivamente con $ \left[0,\ldots , 0\right] $ e $ \left[1,2,\ldots , n-1, n\right] $. Questo ha senso in quanto:
+\begin{itemize}
+	\item Per far si che il pattern vuoto sia sottostringa di $ t $ non serve alsona mossa ($ \left[0,\ldots ,0\right] $)
+	\item Per far sic che un pattern di lunghezza $ k $ sia sottostringa del testo vuoto è necessario aggiungere i $ k $ caratteri del pattern ($ \left[1,2,\ldots , n-1, n\right] $)
+\end{itemize}
+\subsection{Prodotto di catena di matrici}
+Si vuole fare il prodotto matriciale tra $ \left[A_1, A_2,  \ldots, A_{n-1}, A_n \right] $. Il prodotto matriciale gode di proprietà associativa. Si trovi la parentizzazione che riduce al minimo il numero di moltiplicazioni scalari totali da compiere
+\vskip3mm
+Ad esempio, avendo $ \left[A, B, C, D\right] $, posso parentizzare come segue:
+\[
+	\left[\left(A \cdot B\right) \cdot \left(C \cdot D\right)\right], \quad \left[A \cdot \left(B \cdot C \right) \cdot D\right], \quad \left[A \cdot \left(B \cdot \left(C  \cdot D\right)\right)\right]
+\]
+e cosi via. Questo funziona in quanto per moltiplicare delle matrici bisogna assicurarsi che queste siano compatibili. Il numero di colonne della prima deve essere uguale al numero di righe della seconda. Ad esempio, indicando con $ \left[\text{righe}, \text{colonne}\right] $ una matrice, una serie che può essere moltiplicata è la seguente:
+\[
+	\left[4,5\right] \cdot \left[5, 2\right] \cdot \left[2, 10\right]  \cdot \left[10, 7\right] \rightarrow \left[4,5,2,10,7\right]
+\]
+\vskip3mm
+Nota che la dimensione di ogni matrice può essere salvata in un vettore $ c $ in cui $ c_i $ contiene il numero di colonne della matrice $ i $, che corrisponde al numero di righe della matrice $ i+1 $. Quindi il numero di moltiplicazioni necessarie per eseguire $ A_i \times A_j $ sarà:
+\[
+	c_i \cdot (\cdot c_{i-1} \cdot c_j)
+\]
+\begin{itemize}
+	\item $ c_i $: numero di moltiplicazioni per calcolare una cella
+	\item $ (\cdot c_{i-1} \cdot c_j) $: dimensione della matrice risultante
+\end{itemize}
+\vskip3mm\sfblue{Soluzione}\vskip3mm
+\begin{itemize}
+	\item Creo matrice \verb|dp| come seguen:
+	      \begin{center}
+		      \begin{tabular}{|c|c|c|c|c|c|c|}
+			      \hline
+			        & 1 & 2 & 3 & 4 & 5 & 6 \\
+			      \hline
+			      1 & 0 &   &   &   &   &   \\
+			      \hline
+			      2 & - & 0 &   &   &   &   \\
+			      \hline
+			      3 & - & - & 0 &   &   &   \\
+			      \hline
+			      4 & - & - & - & 0 &   &   \\
+			      \hline
+			      5 & - & - & - & - & 0 &   \\
+			      \hline
+			      6 & - & - & - & - & - & 0 \\
+			      \hline
+		      \end{tabular}
+	      \end{center}
+	\item In \verb|dp[i][j]| salvo il minor numero di moltiplicazioni necessarie per moltiplicare le matrici fra \verb|i|  e \verb|j|
+	\item Costruisco matrice scorrento in diagonale a partire dalla diagonale più vicina alla diagonale principale. Il numero minore è dato dal numero minore date due parentizzazioni, ad esempio se ho
+	      \[
+		      \left[A_3,A_4,A_5, A_6\right]
+	      \]
+	      dovro tentare con
+	      \[
+		      \left[\left(A_3\right) \cdot  \left(A_4, A_5, A_6\right)\right], \quad \left[\left(A_3, A_4\right) \cdot  \left(A_5, A_6\right)\right], \quad \left[\left(A_3, A_4, A_5\right) \cdot  \left(A_6\right)\right]
+	      \]
+	\item Il risultato finale si trova in \verb|dp[1][n]|, dove \verb|n| è il numero di matrici
+	\item Per ricostruire la parentizzazione, posso salvarmi in una tabella \verb|last[i][j]| l'indice a cui ho "spezzato la parentizzazione". Poi posso ricostruirla ricorsivamente come segue:
+\end{itemize}
+
+\begin{algoritmo}{Find minimum parenthesization}
+	\begin{algorithm}[H]
+		\caption{Print optimal parenthesization}
+		\SetKwFunction{FPrintPar}{printPar}
+		\Fn{\FPrintPar{$\text{int}\ last[][],\ \text{int}\ i,\ \text{int}\ j$}}{
+		\If{$i == j$}{
+		\Print "A["; \Print $i$; \Print "]"\;
+		}
+		\Else{
+			\Print "("\;
+			\FPrintPar{$last,\ i,\ last[i][j]$}\;
+			\Print "."\;
+			\FPrintPar{$last,\ last[i][j]+1,\ j$}\;
+			\Print ")"\;
+		}
+		}
+	\end{algorithm}
+\end{algoritmo}
+\subsection{Intervalli pesati}\label{intervalli pesati}
+Vengono dati $ n $ intervalli aperti $ \left[a_1, b_1\right[, \left[a_2, b_2\right[ , \ldots  \left[a_n, b_n\right[ $. Ogni intervalli ha un valore $ w_i $. Trovare il valore massimo che si può ottenere selezionando intervalli \underline{non sovrapposti}.
+
+\vskip3mm\sfblue{Soluzione}\vskip3mm
+\begin{itemize}
+	\item Ordina intervalli per \underline{tempo di fine}
+	\item Definisco la funzione \verb|pred(i)|, che ritorna il \textit{predecessore} di un intervallo, ossia il primo intervallo che ha tempo di fine minore del tempo di inizio di $ i $
+	\item Creo vettore \verb|dp| che salva in \verb|i| \underline{il valore massimo ottenibile con gli intervalli fino ad {\ttfamily i}} compreso
+	\item Itero su intervalli. Per ciascun intervallo \verb|i| posso:
+	      \begin{itemize}
+		      \item Selezionarlo: in questo il valore massimo ottenibile è dato da {\ttfamily dp[pred(i)] + $ \text{w}_{\text{i}} $} a
+		      \item \underline{Non} selezionarlo: in questo caso il valore massimo è uguale al precedente {\ttfamily dp[i-1]}
+	      \end{itemize}
+\end{itemize}
+Complessità: $ O\left(n \log n\right) $
+
+\subsection{Problemi sito oii consigliati}
+\begin{itemize}
+	\item Figonacci (\protect\href{https://training.olinfo.it/task/ois_figonacci}{figonacci})
+	\item Discesa massima (\protect{\href{https://training.olinfo.it/task/discesa}{discesa}})
+	\item Police 3 (\protect{\href{https://training.olinfo.it/task/ois_police3}{\ttfamily police3}})
+	\item Piano degli studi (\protect{\href{https://training.olinfo.it/task/ois_pianostudi}{pianostudi}})
+	\item Police 4 (\protect{\href{https://training.olinfo.it/task/ois_police4}{\ttfamily police4}})
+	\item Spiedini di frutta (\protect{\href{https://training.olinfo.it/task/oii_spiedini}{spiedini}})
+	\item K-step ancestor (\protect{\href{https://training.olinfo.it/task/ois_treeancestor}{treeancestor}})
+\end{itemize}
+
 
 
 \end{document}

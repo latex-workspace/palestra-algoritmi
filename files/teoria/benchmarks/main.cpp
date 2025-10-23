@@ -4,8 +4,8 @@
 #include <iostream>
 using namespace std::chrono;
 
-#define MAXWORDCOUNT 1000000
-#define MAXNUMBERCOUNT 10
+#define MAXWORDCOUNT 10
+#define MAXNUMBERCOUNT 1000000
 #define MAXSTRLEN 32
 
 #define INPUT_DATA_FILE "data.txt"
