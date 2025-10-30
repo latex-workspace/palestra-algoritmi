@@ -3,6 +3,8 @@
 \externalize{../.preamble}
 
 \usepackage{pifont}
+\usepackage{makecell}
+\usepackage{contour}
 % \usepackage{amssymb}        % gives \bigstar
 \title{Pelstra di algoritmi}
 \author{Marini Mattia}
@@ -672,6 +674,954 @@ Vengono dati $ n $ intervalli aperti $ \left[a_1, b_1\right[, \left[a_2, b_2\rig
 	      \end{itemize}
 \end{itemize}
 Complessità: $ O\left(n \log n\right) $
+
+\section{Esercizi dp}
+
+\begin{esercizio}{Sottosequenza massima (Kadane's problem) \href{https://leetcode.com/problems/maximum-subarray}{(link)} }
+	Dato in input un vettore {\ttfamily v}, contenente interi (anche negativi), si trovi la \footnote{Una sottosequenza è un insieme di elementi adiacenti all'interno del vettore}{sottosequenza} che abbia somma degli elementi massima. Si ritorni quest'ultima
+	\vskip3mm
+	\vskip3mm
+	\underline{Input}
+	\vskip3mm
+	La dimensione $ n $ del vettore e sulla nuova riga gli elementi del vettore separati da uno spazio
+	\vskip3mm
+	\underline{Output}
+	\vskip3mm
+	La somma degli elementi della sottosequenza con somma massima
+	\begin{center}
+		\begin{tabularx}{\textwidth}{llX}
+			\toprule
+			Input & Output & Discussione \\
+			\midrule
+			\makecell{5                  \\ 1 2 3 4 5} & 15 & La sottosequenza è data dall'intero vettore \\
+			\makecell{8                  \\ -2 -3 4 -1 -2 1 5 -3} & 7 & La sottosequenza è data dall'intervallo $ \left[2, 6\right] $ \\
+			\makecell{4                  \\ -2 -3 -1 -11 } & 0 & Si assuma che la sottosequenza nulla abbia somma 0  \\
+			\bottomrule
+		\end{tabularx}
+	\end{center}
+	Complessità ottimale: $ O\left(v.size\right) $
+\end{esercizio}
+\vskip3mm
+
+Un approccio naif sarebbe quello di generare tutte le sottosequenze possibili e confrontarne la somma, stampando quella massima. Questo approccio tuttavia sarebbe davvero inefficiente, tuttavia è molto semplice da implementare:
+\begin{lstlisting}[language = java, frame = none]
+    public static int subsequenceIneff(int v[]) {
+
+    int max = 0;
+
+    for (int i = 0; i < v.length; i++) {
+
+      int currSum = 0;
+      for (int j = i; j >= 0; j--) {
+        currSum += v[j];
+        if (currSum > max)
+          max = currSum;
+      }
+
+    }
+
+    return max;
+
+  }
+\end{lstlisting}
+\[
+	\text{ Complessità: } O\left(n^2 \right)
+\]
+
+Un approccio più efficiente può essere implementato tramite programmazione dinamica. L'idea è la seguente:
+\begin{itemize}
+	\item Salvo la sottosequenza con somma maggiore che finisce in posizione i-esima
+	\item Calcolo la sottosequenza con somma maggiore che finisce in pos $ i+1 $ utilizzando la sottosequenza con somma maggiore che finisce in pos $ i $. Chiamiamo questo vettore \verb|dp|
+\end{itemize}
+Immaginiamo di salvarci i risultati intermedi in un vettore: questo vettore avrà dimensione $ n $ e conterrà in posizione $ i $ il sottovettore di somma massima che finisce in posizione $ i $. Notiamo innanzitutto che calcolare \verb|dp[0]| è scontato:
+\begin{itemize}
+	\item Se \verb|v[0] > 0| allora il sottovettore è costituito da un singolo elemento, ovvero \verb|v[0]|
+	\item Se \verb|v[0] <= 0| allora il sottovettore è il sottovettore nullo, il quale ha sempre somma 0
+\end{itemize}
+Per calcolare invece \verb|dp[i]|, ragiono nel seguente modo:
+\begin{itemize}
+	\item Se \verb|dp[i-1] + v[i] > 0| allora \verb|dp[i] = dp[i-1] + v[i]| (mi conviene prendere la miglior sottosequenza che termina nella posizione prima e sommarci \verb|v[i]|, anche se questo è negativo)
+	\item Se \verb|dp[i-1] + v[i] <=0| allora \verb|dp[i] = 0| (conviene "ripartire a formare il vettore", dato che concatenando la subsequence con somma maggiore che termina in $ i-1 $ aggiungerei solo una quantità negativa)
+\end{itemize}
+\begin{esercizio}{Cuttinig rod}
+	Dato un cilindro di lunghezza {\ttfamily n} e un vettore {\ttfamily v} di dimensione {\ttfamily n}, che in {\ttfamily v[i]} contenga il prezzo di un cilindro lungo {\ttfamily i+1}, si stampi il prezzo massimo che posso ottenere tagliando il cilindro in quante parti voglio
+	\vskip3mm
+	\vskip3mm
+	\underline{Input}
+	\vskip3mm
+	La dimensione $ n $(la lunghezza del cilindro) e sulla nuova riga gli $ n $ interi positivi che costituiscono gli elementi di v(ossia i prezzi di ogni taglio di cilindro)
+	\vskip3mm
+	\underline{Output}
+	\vskip3mm
+	Il prezzo massimo che posso ottenere suddividendo il cilindro
+	\renewcommand{\cellalign}{l}
+	\tikzexternaldisable
+	\begin{center}
+		\begin{tabularx}{\textwidth}{llX}
+			\toprule
+			Input & Output & Discussione \\
+			\midrule
+			\makecell{5                  \\ 1 2 3 4 5} & 5 & Posso tagliare il cilindro in molti modi per ottenere il valore 5:
+			\vskip3mm
+			{\begin{center}
+					 \begin{tikzpicture}[scale = 0.5]
+						\draw (0,0)rectangle++(5,1);
+						\foreach \x in {0,1,2,3,4,5}{
+								\draw [dashed](0,0)++(\x,0)--(\x,1);
+							}
+
+						\draw (6,0)rectangle++(5,1);
+						\foreach \x in {0,1,3,5}{
+								\draw [dotted](6,0)++(\x,0)--++(0,1);
+							}
+						\draw [dashed](6,0)++(2,0)--++(0,1);
+						\draw [dashed](6,0)++(4,0)--++(0,1);
+
+
+
+
+						\draw (0,-2)rectangle++(5,1);
+						\foreach \x in {0,1,2,4,5}{
+								\draw [dotted](0,-2)++(\x,0)--++(0,1);
+							}
+						\draw [dashed](0,-2)++(3,0)--++(0,1);
+
+						\draw (6,-2)rectangle++(5,1);
+						\foreach \x in {0,1,2,5}{
+								\draw [dotted](6,-2)++(\x,0)--++(0,1);
+							}
+						\draw [dashed](6,-2)++(3,0)--++(0,1);
+						\draw [dashed](6,-2)++(4,0)--++(0,1);
+
+
+
+
+
+						\draw (0,-4)rectangle++(5,1);
+						\foreach \x in {0,1,2,3,5}{
+								\draw [dotted](0,-4)++(\x,0)--++(0,1);
+							}
+
+						\draw [dashed](0,-4)++(4,0)--++(0,1);
+						\draw (6,-4)rectangle++(5,1);
+						\foreach \x in {0,1}{
+								\draw [dotted](6,-4)++(\x,0)--++(0,1);
+							}
+						\draw [dashed](6,-4)++(4,0)--++(0,1);
+						\draw [dashed](6,-4)++(3,0)--++(0,1);
+						\draw [dashed](6,-4)++(2,0)--++(0,1);
+
+					\end{tikzpicture}
+				 \end{center}
+			}
+			\\
+			\midrule
+			\makecell{7                  \\ 1 4 10 8 5 10 13} & 21 & In questo caso ciò che conviene fare è spezzare il cilindro in 2 pezzi di lunghezza 3 e 1 di lunghezza 1:
+			{
+			\begin{center}
+				\begin{tikzpicture}[scale = 0.5]
+					\draw (0,0)rectangle++(7,1);
+					\foreach \x in {0,1,2,4,5,7}{
+							\draw [dotted](0,0)++(\x,0)--(\x,1);
+						}
+					\draw [dashed](3,0)--++(0,1);
+					\draw [dashed](6,0)--++(0,1);
+
+					\node (a)[anchor = north] at(1.5, -0.5)  {10};
+					\node (b)[anchor = north] at(4.5, -0.5)  {10};
+					\node (c)[anchor = north] at(6.5, -0.5)  {1};
+					\draw (a.north)--++(0,0.5);
+					\draw (b.north)--++(0,0.5);
+					\draw (c.north)--++(0,0.5);
+
+					\node (d)at(3.5, -3)  {21};
+					\draw (d)-|(a);
+					\draw (d)-|(b);
+					\draw (d)-|(c);
+				\end{tikzpicture}
+			\end{center}
+			}
+			\\
+			\bottomrule
+		\end{tabularx}
+	\end{center}
+	\tikzexternalenable
+
+	Complessità ottimale: $ O\left(n \cdot v.size\left(\right)\right) $
+\end{esercizio}\label{cuttingrod}
+
+L'idea di base per risolvere il problema è la seguente:
+\begin{itemize}
+	\item Creo un vettore \verb|dp| all'interno del quale salvo \underline{nella $ i $-\textit{esima} cella il valore massimo che posso ottenere suddividendo un cilindro di lunghezza $ i+1 $}
+	\item Costruisco il vettore \verb|dp| partendo dal caso base: \verb|dp[0] = prezzi [0]|, in quanto ho un solo modo di suddividere un cilindro lungo 1
+	\item Contanto sul fatto che il vettore \verb|dp| contenga il \underline{il prezzo maggiore che posso ottenere suddividendo il cilindro in un dato modo}, calcolo \verb|dp[i+1]| sfruttando i dati contenuti nelle celle precedenti del vettore \verb|dp|.In particolare, supponendo di dover calcolare la posizione $ i $ del vettore \verb|dp|, devo:
+	      \begin{itemize}
+		      \item Calcolare il prezzo che otterrei mettendo in posizione $ i $ un pezzo di ogni lunghezza, da 1 a $ i $
+		      \item Confrontare i prezzi ottenuti
+		      \item \verb|dp[i]| è il valore massimo fra questi prezzi
+	      \end{itemize}
+\end{itemize}
+Vediamo un esempio grafico. Supponiamo di avere in input il vettore \verb|prezzi|, con valori:
+\begin{center}
+	1 4 10 8 5 10 13
+\end{center}
+Ripercorriamo gli step appena descritti.
+
+\begin{itemize}
+	\item Creo un vettore \verb|dp| all'interno del quale salvo \underline{nella $ i $-\textit{esima} cella il valore massimo che posso ottenere suddividendo un cilindro di lunghezza $ i+1 $}
+	\item Costruisco il vettore \verb|dp| partendo dal caso base: \verb|dp[0] = prezzi [0]|, in quanto ho un solo modo di suddividere un cilindro lungo 1. Quindi nel nostro caso:
+
+	      \begin{center}
+		      \begin{tikzpicture}[yscale = 0.5, xscale = 0.8]
+			      \draw (0,-2)rectangle++(7,1);
+			      \foreach \x in {0,1,2,3,4,5,6,7}{
+					      \draw [dotted](0,-2)++(\x,0)--++(0,1);
+				      }
+			      \node  at (0.5,-1.5)  {1};
+			      \node  at (1.5,-1.5)  {4};
+			      \node  at (2.5,-1.5)  {10};
+			      \node  at (3.5,-1.5)  {8};
+			      \node  at (4.5,-1.5)  {5};
+			      \node  at (5.5,-1.5)  {10};
+			      \node  at (6.5,-1.5)  {13};
+
+			      \node  [anchor = west] at (7,-1.5)  {\ttfamily prezzi};
+
+
+			      \draw (0,0)rectangle++(7,1);
+			      \foreach \x in {0,1,2,3,4,5,6,7}{
+					      \draw [dotted](0,0)++(\x,0)--(\x,1);
+				      }
+			      \node  at (0.5,0.5)  {1};
+			      \node  [anchor = west] at (7,0.5)  {\ttfamily dp};
+
+		      \end{tikzpicture}
+	      \end{center}
+
+	      Chiaramente, un cilindro id lunghezza 1 non può essere suddiviso, quindi l'unico prezzo possibile è il prezzo del cilindro lungo 1, ossia 1 nel nostro caso
+
+
+	\item Contanto sul fatto che il vettore \verb|dp| contenga il \underline{il prezzo maggiore che posso ottenere suddividendo il cilindro in un dato modo}, calcolo \verb|dp[i+1]| sfruttando i dati contenuti nelle celle precedenti del vettore \verb|dp|.In particolare, supponendo di dover calcolare la posizione $ i $ del vettore \verb|dp|, devo:
+	      \begin{itemize}
+		      \item Calcolare il prezzo che otterrei mettendo in posizione $ i $ un pezzo di ogni lunghezza, da 1 a $ i $
+		      \item Confrontare i prezzi ottenuti
+		      \item \verb|dp[i]| è il valore massimo fra questi prezzi
+	      \end{itemize}
+	      Iniziamo quindi calcolando \verb|v[1]|. So di avere già calcolato il prezzo migliore per suddividere un cilindro di lunghezza $ 1 $. Quindi per arrivare ad avere un cilindro di lunghezza 2 ho due alternative:
+
+	      \begin{center}
+		      \begin{tikzpicture}[yscale = 0.5, xscale = 1.3]
+
+
+			      \draw (0,2)rectangle++(2,2);
+			      \draw (0,3)--(2,3);
+
+			      \node ()[anchor = west]at (2,3.5) {Aggiungo pezzo lungo 1};
+			      \node ()[anchor = west]at (2,2.5) {Aggiungo pezzo lungo 2};
+
+			      \draw [pattern = north east lines](1,3)rectangle(2,4);
+			      \draw [pattern = north east lines](0,2)rectangle(2,3);
+
+			      \node () at (0.5,3.5)  {\ttfamily dp[0]};
+			      \node () at (1.5,3.5)  {\contour{white}{1}};
+
+			      \node () at (1, 2.5)  {\contour{white}{4}};
+
+		      \end{tikzpicture}
+	      \end{center}
+	      Ora devo decidere se mi convenga prendere un solo cilindro da 2 oppure suddividerlo in due pezzi da 1. Mi basta però vedere quale delle opzioni ha prezzo maggiore. In questo caso conviene prendere un pezzo da 2 con costo 4. Dp diventa:
+
+	      \begin{center}
+		      \begin{tikzpicture}[yscale = 0.5, xscale = 0.8]
+			      \draw (0,0)rectangle++(7,1);
+			      \foreach \x in {0,1,2,3,4,5,6,7}{
+					      \draw [dotted](0,0)++(\x,0)--(\x,1);
+				      }
+
+
+			      \node  at (0.5,0.5)  {1};
+			      \node  at (1.5,0.5)  {4};
+			      \node  [anchor = west] at (7,0.5)  {\ttfamily dp};
+
+			      \draw (0,-2)rectangle++(7,1);
+			      \foreach \x in {0,1,2,3,4,5,6,7}{
+					      \draw [dotted](0,-2)++(\x,0)--++(0,1);
+				      }
+			      \node  at (0.5,-1.5)  {1};
+			      \node  at (1.5,-1.5)  {4};
+			      \node  at (2.5,-1.5)  {10};
+			      \node  at (3.5,-1.5)  {8};
+			      \node  at (4.5,-1.5)  {5};
+			      \node  at (5.5,-1.5)  {10};
+			      \node  at (6.5,-1.5)  {13};
+
+			      \node  [anchor = west] at (7,-1.5)  {\ttfamily prezzi};
+
+		      \end{tikzpicture}
+	      \end{center}
+
+	      Ripetiamo il passaggio per $ i=3 $
+\end{itemize}
+
+\newcommand{\dpvector}{
+	\def\rows{1}
+	\def\columns{7}
+	\def\shiftx{0}
+	\def\shifty{-2}
+
+
+	\foreach \x in {0,1,...,\columns}{
+			\draw [dotted](0 + \shiftx,0 + \shifty)++(\x,0)--++(0,\rows);
+		}
+
+	\draw (\shiftx, \shifty)rectangle++(\columns, \rows);
+
+	\node ()[anchor = west]at(7,-1.5) {\ttfamily dp};
+}
+
+\begin{minipage}[t]{0.48\textwidth}
+	\begin{tikzpicture}[yscale = 0.5, xscale = 1.3]
+
+
+		\def\rows{3}
+		\def\columns{3}
+		\newcommand{\shiftx}{0}
+		\newcommand{\shifty}{0}
+
+
+		\foreach \x in {0,1,...,\columns}{
+				\draw [dotted](0 + \shiftx,0 + \shifty)++(\x,0)--++(0,\rows);
+			}
+
+		\foreach \x in {0,1,...,\rows}{
+				\draw (0 + \shiftx,0 + \shifty)++(0,\x)--++(\columns,0);
+			}
+
+		\draw (\shiftx, \shifty)rectangle++(\columns, \rows);
+
+
+		\foreach \x in {\rows,...,1}{
+				\draw [pattern = north east lines](\shiftx + \columns - \x,\shifty + \rows - \x)rectangle++(\x, );
+			}
+
+
+		\node ()at (2.5, 2.5)  {\contour{white}{1}};
+		\node ()at (2, 1.5)  {\contour{white}{4}};
+		\node ()at (1.5, 0.5)  {\contour{white}{10}};
+
+		\node ()at(1.5,2.5)  {\ttfamily dp[1]};
+		\node ()at(0.5,1.5)  {\ttfamily dp[0]};
+
+
+
+
+	\end{tikzpicture}
+	\vskip3mm
+	\begin{tikzpicture}[yscale = 0.5, xscale = 0.8]
+
+		\dpvector
+
+		\node ()at(0.5,-1.5) {1};
+		\node ()at(1.5,-1.5) {4};
+		\node ()at(2.5,-1.5) {\textcolor{gray}{10}};
+	\end{tikzpicture}
+\end{minipage}
+%
+\begin{minipage}[t]{0.48\textwidth}
+
+	\begin{tikzpicture}[yscale = 0.5, xscale = 1.3]
+		\def\rows{4}
+		\def\columns{4}
+		\newcommand{\shiftx}{0}
+		\newcommand{\shifty}{0}
+
+
+		\foreach \x in {0,1,...,\columns}{
+				\draw [dotted](0 + \shiftx,0 + \shifty)++(\x,0)--++(0,\rows);
+			}
+
+		\foreach \x in {0,1,...,\rows}{
+				\draw (0 + \shiftx,0 + \shifty)++(0,\x)--++(\columns,0);
+			}
+
+		\draw (\shiftx, \shifty)rectangle++(\columns, \rows);
+
+
+		\foreach \x in {\rows,...,1}{
+				\draw [pattern = north east lines](\shiftx + \columns - \x,\shifty + \rows - \x)rectangle++(\x, );
+			}
+
+		\node ()at (3.5, 3.5)  {\contour{white}{1}};
+		\node ()at (3, 2.5)  {\contour{white}{4}};
+		\node ()at (2.5, 1.5)  {\contour{white}{10}};
+		\node ()at (2, 0.5)  {\contour{white}{8}};
+
+		\node ()at(2.5,3.5)  {\ttfamily dp[2]};
+		\node ()at(1.5,2.5)  {\ttfamily dp[1]};
+		\node ()at(0.5,1.5)  {\ttfamily dp[0]};
+	\end{tikzpicture}
+	\vskip3mm
+	\begin{tikzpicture}[yscale = 0.5, xscale = 0.8]
+
+		\dpvector
+
+		\node ()at(0.5,-1.5) {1};
+		\node ()at(1.5,-1.5) {4};
+		\node ()at(2.5,-1.5) {10};
+		\node ()at(3.5,-1.5) {\textcolor{gray}{11}};
+	\end{tikzpicture}
+\end{minipage}
+
+
+\vskip20mm
+
+
+%
+\begin{minipage}[t]{0.48\textwidth}
+	\begin{tikzpicture}[yscale = 0.5, xscale = 1.3]
+		\def\rows{5}
+		\def\columns{5}
+		\newcommand{\shiftx}{0}
+		\newcommand{\shifty}{0}
+
+
+		\foreach \x in {0,1,...,\columns}{
+				\draw [dotted](0 + \shiftx,0 + \shifty)++(\x,0)--++(0,\rows);
+			}
+
+		\foreach \x in {0,1,...,\rows}{
+				\draw (0 + \shiftx,0 + \shifty)++(0,\x)--++(\columns,0);
+			}
+
+		\draw (\shiftx, \shifty)rectangle++(\columns, \rows);
+
+
+		\foreach \x in {\rows,...,1}{
+				\draw [pattern = north east lines](\shiftx + \columns - \x,\shifty + \rows - \x)rectangle++(\x, );
+			}
+
+		\node ()at (4.5, 4.5)  {\contour{white}{1}};
+		\node ()at (4, 3.5)  {\contour{white}{4}};
+		\node ()at (3.5, 2.5)  {\contour{white}{10}};
+		\node ()at (3, 1.5)  {\contour{white}{8}};
+		\node ()at (2.5, 0.5)  {\contour{white}{5}};
+
+		\node ()at(3.5,4.5)  {\ttfamily dp[3]};
+		\node ()at(2.5,3.5)  {\ttfamily dp[2]};
+		\node ()at(1.5,2.5)  {\ttfamily dp[1]};
+		\node ()at(0.5,1.5)  {\ttfamily dp[0]};
+	\end{tikzpicture}
+	\vskip3mm
+	\begin{tikzpicture}[yscale = 0.5, xscale = 0.8]
+
+		\dpvector
+
+		\node ()at(0.5,-1.5) {1};
+		\node ()at(1.5,-1.5) {4};
+		\node ()at(2.5,-1.5) {10};
+		\node ()at(3.5,-1.5) {11};
+		\node ()at(4.5,-1.5) {\textcolor{gray}{14}};
+	\end{tikzpicture}
+\end{minipage}
+%
+\begin{minipage}[t]{0.48\textwidth}
+	\begin{tikzpicture}[yscale = 0.5, xscale = 1.3]
+		\def\rows{6}
+		\def\columns{6}
+		\newcommand{\shiftx}{0}
+		\newcommand{\shifty}{0}
+
+
+		\foreach \x in {0,1,...,\columns}{
+				\draw [dotted](0 + \shiftx,0 + \shifty)++(\x,0)--++(0,\rows);
+			}
+
+		\foreach \x in {0,1,...,\rows}{
+				\draw (0 + \shiftx,0 + \shifty)++(0,\x)--++(\columns,0);
+			}
+
+		\draw (\shiftx, \shifty)rectangle++(\columns, \rows);
+
+
+		\foreach \x in {\rows,...,1}{
+				\draw [pattern = north east lines](\shiftx + \columns - \x,\shifty + \rows - \x)rectangle++(\x, );
+			}
+
+		\node ()at (5.5, 5.5)  {\contour{white}{1}};
+		\node ()at (5, 4.5)  {\contour{white}{4}};
+		\node ()at (4.5, 3.5)  {\contour{white}{10}};
+		\node ()at (4, 2.5)  {\contour{white}{8}};
+		\node ()at (3.5, 1.5)  {\contour{white}{5}};
+		\node ()at (3, 0.5)  {\contour{white}{10}};
+
+		\node ()at(4.5,5.5)  {\ttfamily dp[4]};
+		\node ()at(3.5,4.5)  {\ttfamily dp[3]};
+		\node ()at(2.5,3.5)  {\ttfamily dp[2]};
+		\node ()at(1.5,2.5)  {\ttfamily dp[1]};
+		\node ()at(0.5,1.5)  {\ttfamily dp[0]};
+	\end{tikzpicture}
+	\vskip3mm
+	\begin{tikzpicture}[yscale = 0.5, xscale = 0.8]
+
+		\dpvector
+
+		\node ()at(0.5,-1.5) {1};
+		\node ()at(1.5,-1.5) {4};
+		\node ()at(2.5,-1.5) {10};
+		\node ()at(3.5,-1.5) {11};
+		\node ()at(4.5,-1.5) {14};
+		\node ()at(5.5,-1.5) {\textcolor{gray}{20}};
+	\end{tikzpicture}
+
+\end{minipage}
+
+\vskip15mm
+
+\begin{tikzpicture}[yscale = 0.5, xscale = 1.3]
+	\def\rows{7}
+	\def\columns{7}
+	\newcommand{\shiftx}{0}
+	\newcommand{\shifty}{0}
+
+
+	\foreach \x in {0,1,...,\columns}{
+			\draw [dotted](0 + \shiftx,0 + \shifty)++(\x,0)--++(0,\rows);
+		}
+
+	\foreach \x in {0,1,...,\rows}{
+			\draw (0 + \shiftx,0 + \shifty)++(0,\x)--++(\columns,0);
+		}
+
+	\draw (\shiftx, \shifty)rectangle++(\columns, \rows);
+
+
+	\foreach \x in {\rows,...,1}{
+			\draw [pattern = north east lines](\shiftx + \columns - \x,\shifty + \rows - \x)rectangle++(\x, );
+		}
+
+	\node ()at (6.5, 6.5)  {\contour{white}{1}};
+	\node ()at (6, 5.5)  {\contour{white}{1}};
+	\node ()at (5.5, 4.5)  {\contour{white}{4}};
+	\node ()at (5, 3.5)  {\contour{white}{10}};
+	\node ()at (4.5, 2.5)  {\contour{white}{8}};
+	\node ()at (4, 1.5)  {\contour{white}{5}};
+	\node ()at (3.5, 0.5)  {\contour{white}{10}};
+
+	\node ()at(5.5,6.5)  {\ttfamily dp[5]};
+	\node ()at(4.5,5.5)  {\ttfamily dp[4]};
+	\node ()at(3.5,4.5)  {\ttfamily dp[3]};
+	\node ()at(2.5,3.5)  {\ttfamily dp[2]};
+	\node ()at(1.5,2.5)  {\ttfamily dp[1]};
+	\node ()at(0.5,1.5)  {\ttfamily dp[0]};
+\end{tikzpicture}
+\vskip3mm
+\begin{tikzpicture}[yscale = 0.5, xscale = 1.3]
+
+	\dpvector
+
+	\node ()at(0.5,-1.5) {1};
+	\node ()at(1.5,-1.5) {4};
+	\node ()at(2.5,-1.5) {10};
+	\node ()at(3.5,-1.5) {11};
+	\node ()at(4.5,-1.5) {14};
+	\node ()at(5.5,-1.5) {20};
+	\node ()at(6.5,-1.5) {\textcolor{gray}{21}};
+\end{tikzpicture}
+
+
+\begin{esercizio}{Somma e media \href{https://training.olinfo.it/\#/task/array/statement}{(link)}}
+	Dati in input un numero $ N $, e successivamente $ N $ interi, calcolare la media aritmetica e la somma di questi ultimi
+	\vskip3mm
+	\underline{Input:}
+	\vskip3mm Sulla prima riga l'intero $ N $, sulla seconda riga $ N $ interi separati da uno spazio
+	\vskip3mm
+	\underline{Output:}
+	\vskip3mm Due interi: rispettivamente la somma degli $ N $ numeri e la loro media aritmetica
+	\renewcommand{\cellalign}{l}
+	\vskip3mm
+	\begin{tabularx}{\textwidth}{llX}
+		\toprule
+		Input & Output & Discussione \\
+		\midrule
+		\makecell{1                  \\ 12} & 12 12 & Somma e media coincidono e hanno valore 12\\[12pt]
+		\makecell{7                  \\ 1 2 34 -56 33 23 89} & 126 18 & Somma e media coincidono e hanno valore 12\\
+		\bottomrule
+	\end{tabularx}
+	\vskip3mm
+	Complessità ottimale: $ O\left(N\right) $
+\end{esercizio}
+
+\begin{esercizio}{Majority element \href{https://leetcode.com/problems/majority-element/submissions/}{(link)}}
+	Dato un array \textit{nums} di dimentione $ n $, ritornare il \textit{majority element}. Il \textit{majority element} è l'elemento che appare \underline{di più} di $ \frac{n}{2} $ volte. Si può assumere che l'elemento esista sempre nell'array
+	\vskip3mm
+	\underline{Input:}
+	\vskip3mm Sulla prima riga l'intero $ n $, sulla seconda riga $ n $, ossia gli elementi di \textit{nums}
+	\vskip3mm
+	\underline{Output:}
+	\vskip3mm Un intero, il majority element
+	\vskip3mm
+	\renewcommand{\cellalign}{l}
+	\begin{tabularx}{\textwidth}{llX}
+		\toprule
+		Input & Output & Discussione \\
+		\midrule
+		\makecell{3                  \\ 3 2 3} & 3 & 3 appare più di 3/2 = 1 volta \\[12pt]
+		\makecell{7                  \\ 2 2 1 1 1 2 2} & 2 & 2 appare più di 7/2 = 3 volte\\
+		\bottomrule
+	\end{tabularx}
+	\vskip3mm
+	Complessità ottimale: $ O\left(n\right) $
+\end{esercizio}
+
+\begin{esercizio}{Longest Common Subsequence \href{https://leetcode.com/problems/longest-common-subsequence/}{(link)}}
+	Date in input due stringhe \textit{S1} ed \textit{S2}, si ritorni la lunghezza della \textit{longhest common subsequence}, ossia della \footnote{Con \underline{sottoseuquenza} si intende la una stringa che si può ottenere da un'altra eliminando determinati caratteri: \textit{bedbreakfast} è una sottosequenza di \textit{bedandbreakfast}. A differenza di ciò che accade in un \underline{sottovettore}, i caratteri \underline{non} devono essere necessariamente contigui: \textit{bedbreakfast} è sottosequenza ma non sottovettore; \textit{breakfast} è sottosequenza e sottovettore}{sottosequenza} più lunga comunque ad esntrambe le stringhe.
+	\vskip3mm
+	\underline{Input:}
+	\vskip3mm Due stringhe, una per riga, composte da caratteri maiuscoli compresi fra $ A $ e $ Z $
+	\vskip3mm
+	\underline{Output:}
+	\vskip3mm Un intero, la lunghezza della più lunga sottosequenza comune ad entrambe le stringhe
+	\vskip3mm
+	\renewcommand{\cellalign}{l}
+	\begin{tabularx}{\textwidth}{llX}
+		\toprule
+		Input & Output & Discussione \\
+		\midrule
+		\makecell{AGGTAB             \\GXTXAYB} & 4 & La sottosequenza comune con lunghezza maggiore è \textit{"GTAB"}, ed ha lunghezza pari a 4  \\[12pt]
+		\makecell{AABBCCD            \\  AABBD} & 5 & La sottosequenza comune con lunghezza maggiore è \textit{"AABBD", ed ha lunghezza pari a 5}\\
+		\bottomrule
+	\end{tabularx}
+	\vskip3mm
+	Complessità ottimale: $ O\left(s_1.lenght \cdot s_2.lenght\right) $
+\end{esercizio}
+Per risolvere questo problema dobbiamo utilizzare una matrice di supporto, che salverà i valori intermedi e ci permetterà di utilizzare la programmazione dinamica. Prendiamo come esempio il le stringhe \textit{"AGGTAB"} e \textit{"GXTXAYB"}. La matrice di supporto deve avere la seguente forma:
+\begin{center}
+	\begin{tabular}{cccccccccl}
+		                          &                        & G                      & X                      & T                      & X                      & A                      & Y                      & B                      & s1, j \\ \cline{2-9}
+		\multicolumn{1}{c|}{}     & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} &       \\ \cline{2-9}
+		\multicolumn{1}{c|}{A}    & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  &       \\ \cline{2-9}
+		\multicolumn{1}{c|}{G}    & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  &       \\ \cline{2-9}
+		\multicolumn{1}{c|}{G}    & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  &       \\ \cline{2-9}
+		\multicolumn{1}{c|}{T}    & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  &       \\ \cline{2-9}
+		\multicolumn{1}{c|}{A}    & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  &       \\ \cline{2-9}
+		\multicolumn{1}{c|}{B}    & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  &       \\ \cline{2-9}
+		\multicolumn{1}{l}{s2, i} & \multicolumn{1}{l}{}   & \multicolumn{1}{l}{}   & \multicolumn{1}{l}{}   & \multicolumn{1}{l}{}   & \multicolumn{1}{l}{}   & \multicolumn{1}{l}{}   & \multicolumn{1}{l}{}   & \multicolumn{1}{l}{}   &
+	\end{tabular}
+\end{center}
+
+Quindi la struttura della matrice è la seguente:
+\begin{itemize}
+	\item Un orentamento rappresenta una stringa, l'altro l'altra (nota che le stringhe non sono salvate nella matrice, sono riportate in figura solo per rendere il procedimento più chiaro)
+	\item La prima colonna e la prima riga sono riempite di zeri. Questo serve perché ci permette di evitare di incappare in indici negativi quando eseguiremo l'algoritmo
+	\item Siano \verb|s1| e \verb|s2| le stringhe, nella cella di indice $ \left(i,j\right) $, salveremo \underline{la lunghezza della longest common subsequence per {\ttfamily s1.substring(0,i)} e {\ttfamily s2.substring(0,j)}}
+\end{itemize}
+\vskip3mm
+\begin{minipage}[c]{0.68\textwidth}
+	\begin{center}
+		\begin{tabular}{cccccccccl}
+			                          &                        & G                      & X                      & T                      & X                      & A                      & Y                          & B                      & s1, j \\ \cline{2-9}
+			\multicolumn{1}{c|}{}     & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{0}     & \multicolumn{1}{c|}{0} &       \\ \cline{2-9}
+			\multicolumn{1}{c|}{A}    & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}      & \multicolumn{1}{c|}{}  &       \\ \cline{2-9}
+			\multicolumn{1}{c|}{G}    & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{(1,6)} & \multicolumn{1}{c|}{}  &       \\ \cline{2-9}
+			\multicolumn{1}{c|}{G}    & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}      & \multicolumn{1}{c|}{}  &       \\ \cline{2-9}
+			\multicolumn{1}{c|}{T}    & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}      & \multicolumn{1}{c|}{}  &       \\ \cline{2-9}
+			\multicolumn{1}{c|}{A}    & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}      & \multicolumn{1}{c|}{}  &       \\ \cline{2-9}
+			\multicolumn{1}{c|}{B}    & \multicolumn{1}{c|}{0} & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}  & \multicolumn{1}{c|}{}      & \multicolumn{1}{c|}{}  &       \\ \cline{2-9}
+			\multicolumn{1}{l}{s2, i} & \multicolumn{1}{l}{}   & \multicolumn{1}{l}{}   & \multicolumn{1}{l}{}   & \multicolumn{1}{l}{}   & \multicolumn{1}{l}{}   & \multicolumn{1}{l}{}   & \multicolumn{1}{l}{}       & \multicolumn{1}{l}{}   &
+		\end{tabular}
+	\end{center}
+\end{minipage}
+%
+\begin{minipage}[c]{0.30\textwidth}
+	Ad esempio, nella cella evidenziata, con indice $ \left(1,6\right) $, va salvata la lunghezza della LCS delle stringhe "GXTXAY" e "AG"
+\end{minipage}
+\vskip3mm
+Detto questo, possiamo riempire la tabella secondo i seguenti criteri:
+\begin{itemize}
+	\item Se {\ttfamily s1[i-1] == s2[j-1]} ciò significa che la soluzione ottimale per quel sottoproblema è data dalla soluzione ottimale per il sottoproblema con le medesime stringhe senza però questultimo carattere. La soluzione di questo problema si trova nella cella $ \left(i-2, j-2\right) $
+	\item Se {\ttfamily s1[i-1] != s2[j-1]} allora non ho modo di migliorare la lunghezza della LCS aggiungendo un elemento alle sottostringhe dei problemi precedenti. La soluzione ottimale è quindi da calcolare confrontando le soluzioni ottimali precedenti, in particolare sia {\ttfamily dp} la matrice:
+	      \begin{center}
+		      \ttfamily dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1])
+	      \end{center}
+	      Volendo ad esempio calcolare il problema per le sottostringhe "GXT" e "AGGTA" posso partire dalle soluzioni dei sottoproblemi per le stringhe "GX", "AGGTA" e "GXT", "AGGT". Mi basta prendere la maggiore di queste due.
+	      \vskip3mm
+	      Nota anche che non mi serve controllare la soluzione del sottoproblema "GX", "AGGT" in quanto colonne e righe sono tutte ordinate in maniera crescente, quindi è impossibile che la cella $ \left(i-1, j-1\right) $ abbia un valore maggiore della cella $ \left(i, j-1\right) $ o $ \left(i-1, j\right) $
+\end{itemize}
+
+\begin{esercizio}{Minimum coin \href{https://leetcode.com/problems/coin-change/description/}{(link)}}
+	Vengono dati in input un array contenente un array {\ttfamily coins} (il quale rappresenta monete di diverso taglio) e un numero intero {\ttfamily ammount} (il quale rappresenta il quantitativo totale di monete). Calcolare il numero minimo di monete che si possono utilizzare per arrivare alla somma {\ttfamily ammount} . Si assuma di avere un numero infinito di monete per ogni taglio.
+	\vskip3mm
+	\underline{Input:}
+	\vskip3mm Due righe. Sulla prima gli interi {\ttfamily ammount}  e {\ttfamily n}  (la dimensione di {\ttfamily coins} ), mentre sulla seconda gli elementi di {\ttfamily coins}  separati da uno spazio. Nota che gli elementi di {\ttfamily coins} non vengono necessariamente dati in ordine crescente
+	\vskip3mm
+	\underline{Output:}
+	\vskip3mm Un intero, il numero minimo necessario di monete per arrivare ad {\ttfamily ammount}. Se la combinazione non fosse presente ritornare -1
+	\vskip3mm
+	\renewcommand{\cellalign}{l}
+	\begin{tabularx}{\textwidth}{llX}
+		\toprule
+		Input & Output & Discussione \\
+		\midrule
+		\makecell{11 3               \\ 1 2 5} & 3 & Per ottenere la somma 11 posso utilizzare 2 monete da 5 e 1 da 1 \\[12pt]
+		\makecell{4 1                \\  3} & -1 & Non è possibile ottenere una somma di 4 con sole monete da 3\\
+		\bottomrule
+	\end{tabularx}
+	\vskip3mm
+	Complessità ottimale: $ O\left(coins.size \cdot amount\right) $
+\end{esercizio}
+Approccio intuitivo (sbagliato): cerco di riempire la somma con monete quanto più grandi possibile. Ad esempio con questo input, tuttavia, non funziona: somma: 20, monete: 15 13 7 1
+\vskip3mm
+L'approccio corretto è molto simile al problema \textit{\hyperref[cuttingrod]{cutting rod}}. Di fatto è come se dovessimo "riempire" un cilindro lungo {\ttfamily ammount} con pezzi di dimensioni contenute in {\ttfamily coins}.
+\vskip3mm
+Procediamo così:
+\begin{itemize}
+	\item Creo vettore \verb|dp| di dimensione \verb|ammount|, all'interno del quale salvo nella cella $ i $ il numero minore di monete per creare una somma pari ad $ i $
+	\item \verb|dp[0]=0|, ossia ho modo di creare una somma pari a zero con zero monete
+	\item Per calcolare la cella i-esima del vettore \verb|dp|, devo ragionare nel seuguente modo:
+	      \begin{itemize}
+		      \item Per ogni moneta che abbbia valore inferiore a $ i $, calcoliamo il minor numero di monete che possiamo usare utilizzando il vettore \verb|dp|, in analogia con il problema \textit{\hyperref[cuttingrod]{cutting rod}}. Supponiamo di avere \verb|amount=5, coins=[1, 2, 3, 4]|
+		            \begin{center}
+
+			            \begin{tikzpicture}[yscale = 0.5, xscale = 1.3]
+				            \def\rows{1}
+				            \def\columns{6}
+				            \newcommand{\shiftx}{0}
+				            \newcommand{\shifty}{0}
+
+
+				            \foreach \x in {0,1,...,\columns}{
+						            \draw [dotted](0 + \shiftx,0 + \shifty)++(\x,0)--++(0,\rows);
+					            }
+
+				            \foreach \x in {0,1,...,\rows}{
+						            \draw (0 + \shiftx,0 + \shifty)++(0,\x)--++(\columns,0);
+					            }
+
+				            \draw (\shiftx, \shifty)rectangle++(\columns, \rows);
+
+				            %\draw [-latex](5 - 0.5, 1)to[out=90, in=90](4 - 0.5, 1);
+				            \node at (1 - 0.5, \shifty + 0.5) {0};
+				            \node at (2 - 0.5, \shifty + 0.5) {1};
+				            \node at (3 - 0.5, \shifty + 0.5) {1};
+				            \node at (4 - 0.5, \shifty + 0.5) {1};
+				            \node at (5 - 0.5, \shifty + 0.5) {1};
+				            \node at (6 - 0.5, \shifty + 0.5) {?};
+
+				            \draw (\columns + 1, 1.5)rectangle(\columns + 2, 5.5);
+
+				            \foreach \x in {0,1,...,2}{
+						            \draw [dotted](\columns + 1, 2.5 + \x)--++(1,0);
+					            }
+
+				            \node (a)at(\columns + 1.5, 2) {1};
+				            \node (b)at(\columns + 1.5, 3) {2};
+				            \node (c)at(\columns + 1.5, 4) {3};
+				            \node (d)at(\columns + 1.5, 5) {4};
+				            \node  at(\columns + 1.5, 6.5) {Monete da:};
+
+				            \draw [-latex](\columns + 1, 5)to[out = 180, in=90](1.5, 1);
+				            \draw [-latex](\columns + 1, 4)to[out = 180, in=90](2.5, 1);
+				            \draw [-latex](\columns + 1, 3)to[out = 180, in=90](3.5, 1);
+				            \draw [-latex](\columns + 1, 2)to[out = 180, in=90](4.5, 1);
+
+				            \node (1)at(\columns + 3.5, 2) {1 + dp[4] = 2};
+				            \node (2)at(\columns + 3.5, 3) {1 + dp[3] = 2};
+				            \node (3)at(\columns + 3.5, 4) {1 + dp[2] = 2};
+				            \node (4)at(\columns + 3.5, 5) {1 + dp[1] = 2};
+				            \node  at(\columns + 3.5, 6.5) {Best sol};
+
+				            \draw (a)--(1);
+				            \draw (b)--(2);
+				            \draw (c)--(3);
+				            \draw (d)--(4);
+			            \end{tikzpicture}
+
+			            La miglior souzione per una somma pari a 5 è quindi 2. Possiamo usare 2 monete in modi diversi ((3,2), (4,1)) per ottenere la somma 5
+		            \end{center}
+	      \end{itemize}
+	\item Mettendo in ordine il concetto intuitivo dobbiamo creare \verb|dp[i]| mettendo nel seguente modo:
+	      \begin{itemize}
+		      \item Per ogni elemento di \verb|coins| che sia minore di \verb|i| calcolo il numero minimo di monete che è necessario per arrivare ad una somma di \verb|i| utilizzando \verb|dp|. Supponendo di dover includere una moneta di valore \verb|value|, allora il minor numero di monete per arrivare a \verb|i| è dato da
+		            \begin{center}
+			            \verb|dp[i-value] + 1|
+		            \end{center}
+		      \item Il valore minimo di monete per arrivare alla somma \verb|i| è il valore minimo fra tutti quelli calcolari al punto precedente
+		      \item Occhio ai casi nei quali non è possibile ottenere una somma specifica tramite le monete a disposizione. In questi casi metteremo il valore -1 nel vettore \verb|dp|
+	      \end{itemize}
+\end{itemize}
+\begin{esercizio}{Unique paths \href{https://leetcode.com/problems/unique-paths/description/}{(link)} }
+	Un robot si muove su di una griglia {\ttfamily n x m}. Il robot inizialmente è posizionato sulla cella $ \left[0\right]\left[0\right] $ e deve arrivare alla cella $ \left[m-1\right]\left[n-1\right] $. Il robot può muoversi solamente verso il basso e verso destra. Dati due interi {\ttfamily n, m} che indicano la dimensione della griglia, calcolare il numero di percosi possibili
+	\vskip3mm
+	\vskip3mm
+	\underline{Input}
+	\vskip3mm
+	Gli interi {\ttfamily m} e {\ttfamily n}
+	\vskip3mm
+	\underline{Output}
+	\vskip3mm
+	Il numero di percorsi possibili
+	\renewcommand{\cellalign}{l}
+	\begin{center}
+		\begin{tabularx}{\textwidth}{llX}
+			\toprule
+			Input & Output & Discussione                                                                                        \\
+			\midrule
+			2 2   & 2      & I percorsi possibili sono $[(R \rightarrow D), (D \rightarrow R)]$                                 \\[12pt]
+			3 2   & 3      & I percorsi possibili sono \vskip0mm
+			$(R \rightarrow D \rightarrow D)$, $(D \rightarrow D \rightarrow R)$, $\left(D \rightarrow R \rightarrow D\right)]$ \\
+			\bottomrule
+		\end{tabularx}
+	\end{center}
+	Complessità ottimale: $ O\left(n \cdot  m\right) $
+\end{esercizio}\label{uniquepaths}
+
+L'idea di base è la seguente:
+\begin{itemize}
+	\item Creo matrice {\ttfamily dp} che salva nella generica cella $ \left[i\right]\left[j\right] $ il numero di percorsi tramite i quali posso arrivare in $ \left[i\right]\left[j\right] $
+	\item Inizializzo la prima colonna e la prima riga della matrice a 1: per raggiungere le celle della prima riga e colonna ho un solo modo, ossia rispettivamente spostarmi a destra o spostarmi in basso (non posso tornare indietro)
+	\item Per ogni cella che avanza calcolo il valore come la somma della cella a sinistra e della cella a sopra: questo perche per arrivare nella cella $ \left[i\right]\left[j\right] $ posso passare per la cella $ \left[i-1\right]\left[j\right] $ oppure per la cella $ \left[i\right]\left[j-1\right] $. La somma dei modi che ho per arrivare nelle suddette celle è il numero di modi che ho per arrivare nella cella corrente
+	\item Una volta generata l'intera tabella, nella ultima cella in basso a destra avro il risultato al problema
+\end{itemize}
+\begin{gather*}
+	\begin{bmatrix}
+		1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+		1 & 2 & / & / & / & / & / \\
+		1 & / & / & / & / & / & / \\
+	\end{bmatrix}
+	\begin{bmatrix}
+		1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+		1 & 2 & 3 & / & / & / & / \\
+		1 & / & / & / & / & / & / \\
+	\end{bmatrix}
+	\begin{bmatrix}
+		1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+		1 & 2 & 3 & 4 & / & / & / \\
+		1 & / & / & / & / & / & / \\
+	\end{bmatrix}
+	\begin{bmatrix}
+		1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+		1 & 2 & 3 & 4 & 5 & / & / \\
+		1 & / & / & / & / & / & / \\
+	\end{bmatrix}
+	\\
+	\begin{bmatrix}
+		1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+		1 & 2 & 3 & 4 & 5 & 6 & / \\
+		1 & / & / & / & / & / & / \\
+	\end{bmatrix}
+	\begin{bmatrix}
+		1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+		1 & 2 & 3 & 4 & 5 & 6 & 7 \\
+		1 & / & / & / & / & / & / \\
+	\end{bmatrix}
+	\begin{bmatrix}
+		1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+		1 & 2 & / & / & / & / & / \\
+		1 & 3 & / & / & / & / & / \\
+	\end{bmatrix}
+	\begin{bmatrix}
+		1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+		1 & 2 & 3 & / & / & / & / \\
+		1 & 3 & 6 & / & / & / & / \\
+	\end{bmatrix}
+	\\
+	\begin{bmatrix}
+		1 & 1 & 1 & 1  & 1 & 1 & 1 \\
+		1 & 2 & 3 & 4  & / & / & / \\
+		1 & 3 & 6 & 10 & / & / & / \\
+	\end{bmatrix}
+	\begin{bmatrix}
+		1 & 1 & 1 & 1  & 1  & 1 & 1 \\
+		1 & 2 & 3 & 4  & 5  & / & / \\
+		1 & 3 & 6 & 10 & 15 & / & / \\
+	\end{bmatrix}
+	\\
+	\begin{bmatrix}
+		1 & 1 & 1 & 1  & 1  & 1  & 1 \\
+		1 & 2 & 3 & 4  & 5  & 6  & / \\
+		1 & 3 & 6 & 10 & 15 & 21 & / \\
+	\end{bmatrix}
+	\begin{bmatrix}
+		1 & 1 & 1 & 1  & 1  & 1  & 1  \\
+		1 & 2 & 3 & 4  & 5  & 6  & 7  \\
+		1 & 3 & 6 & 10 & 15 & 21 & 28 \\
+	\end{bmatrix}
+\end{gather*}
+
+
+\begin{esercizio}{Unique paths II \href{https://leetcode.com/problems/unique-paths/description/}{(link)} }
+	Un robot si muove su di una griglia {\ttfamily n x m}. Il robot inizialmente è posizionato sulla cella $ \left[0\right]\left[0\right] $ e deve arrivare alla cella $ \left[m-1\right]\left[n-1\right] $. Il robot può muoversi solamente verso il basso e verso destra. Sulla griglia possono essere presenti degli ostacoli attraverso i quali il robot non può passare. Data una matrice {\ttfamily obstacles}, nella quale le celle con valore 1 indicano le celle con ostacoli, trovare il numero di percorsi possibili per arrivare nell'ultima cella in fondo a destra
+	\vskip3mm
+	\vskip3mm
+	\underline{Input}
+	\vskip3mm
+	Gli interi {\ttfamily m} e {\ttfamily n} e nelle {\ttfamily m} righe successiva gli elementi della matrice {\ttfamily obstacles}
+	\vskip3mm
+	\underline{Output}
+	\vskip3mm
+	Il numero di percorsi possibili
+	\renewcommand{\cellalign}{l}
+	\begin{center}
+		\begin{tabularx}{\textwidth}{llX}
+			\toprule
+			Input & Output & Discussione                                                                     \\
+			\midrule
+			\makecell{3 3                                                                                    \\ 0 0 0 \\ 0 1 0 \\ 0 0 0}& 2  & I percorsi possibili sono \vskip0mm
+			$[(R \rightarrow R \rightarrow D \rightarrow D), (D \rightarrow D \rightarrow R \rightarrow R)]$ \\
+			\bottomrule
+		\end{tabularx}
+	\end{center}
+	Complessità ottimale: $ O\left(n \cdot  m\right) $
+\end{esercizio}
+
+L'idea è molto simile al problema \hyperref[uniquepaths]{Unique paths}, con l'unica differenza che dobbiamo tenere in considerazione i casi in cui una rotta è preclusa da un ostacolo. Inoltre, anzichè creare una nuova matrice {\ttfamily dp}, possiamo usare direttamente la matrice {\ttfamily obstacles} che ci viene data.
+\begin{itemize}
+	\item Riempio la prima colonna e riga della matrice {\ttfamily obstacles} con valore 1 fino al primo ostacolo. Dal primo ostacolo in poi avrò solo celle irraggiungibili. Setto le celle irraggiungibili con valore -1, in quanto usando 1 rischierei di confondere le celle irraggiungibili con le celle raggiungibili da 1 solo cammino
+	\item Calcolo le celle rimanenti con la stessa logica usata in \hyperref[uniquepaths]{Unique paths}, tenendo conto però che:
+	      \begin{itemize}
+		      \item Nel caso ci sia un ostacolo nella cella a sinistra o in alto a quella corrente non posso arrivare da quella direzione. Se non rimane nemmeno una rotta possibile posso impostare il valore della della a -1, in quanto non riesco a ragiungerla in nessun modo
+		      \item Nel caso ci sia un ostacolo nella cella corrente ({\ttfamily obstacles[i][j] == 1}) cambio il valore e metto -1, onde evitare ambiguità come spiegato precedentemente
+	      \end{itemize}
+	\item Ancora una volta, nella cella $ \left[m-1,n-1\right] $ ci sarà la soluzione del problema
+\end{itemize}
+
+\begin{gather*}
+	\begin{bmatrix}
+		0 & 0 & 0 \\
+		0 & 1 & 0 \\
+		0 & 0 & 0 \\
+	\end{bmatrix}
+	\xrightarrow{\text{riempio prima riga e colonna}}
+	\begin{bmatrix}
+		1 & 1 & 1 \\
+		1 & 1 & 0 \\
+		1 & 0 & 0 \\
+	\end{bmatrix}
+	\xrightarrow{\text{ cambio ostacolo in -1}}
+	\begin{bmatrix}
+		1 & 1  & 1 \\
+		1 & -1 & 0 \\
+		1 & 0  & 0 \\
+	\end{bmatrix}
+	\\
+	\begin{bmatrix}
+		1 & 1  & 1 \\
+		1 & -1 & 1 \\
+		1 & 0  & 0 \\
+	\end{bmatrix}
+	\begin{bmatrix}
+		1 & 1  & 1 \\
+		1 & -1 & 0 \\
+		1 & 1  & 0 \\
+	\end{bmatrix}
+	\begin{bmatrix}
+		1 & 1  & 1 \\
+		1 & -1 & 1 \\
+		1 & 1  & 2 \\
+	\end{bmatrix}
+\end{gather*}
+
+
 
 \section{Problemi sito oii consigliati}\label{problemi oii}
 Di seguito una raccolta di problemi provenienti dal sito degli allenamenti della OII. Sono proposte delle soluzioni in sezione \cref{soluzioni problemi oii}
