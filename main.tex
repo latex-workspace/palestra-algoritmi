@@ -1,10 +1,9 @@
 %&../.preamble
-\endofdump
 
-\usetikzlibrary{external}
-\tikzset{external/system call={pdflatex --shell-escape --fmt=../.preamble --halt-on-error -jobname "\image" "\endofdump\texsource"}}
-\tikzexternalize[prefix=tikz/]
+\externalize{../.preamble}
 
+\usepackage{pifont}
+% \usepackage{amssymb}        % gives \bigstar
 \title{Pelstra di algoritmi}
 \author{Marini Mattia}
 \date{20 ottobre 2025}
@@ -674,8 +673,30 @@ Vengono dati $ n $ intervalli aperti $ \left[a_1, b_1\right[, \left[a_2, b_2\rig
 \end{itemize}
 Complessità: $ O\left(n \log n\right) $
 
-\section{Problemi sito oii consigliati}
+\section{Problemi sito oii consigliati}\label{problemi oii}
+Di seguito una raccolta di problemi provenienti dal sito degli allenamenti della OII. Sono proposte delle soluzioni in sezione \cref{soluzioni problemi oii}
+
+\begin{center}
+	\begin{tabular}{l l l l}
+		\toprule
+		Problema                                                                                                     & Tecniche               & Difficoltà                                        & Soluzione               \\
+		\midrule
+		Figonacci {(\texttt{\href{https://training.olinfo.it/task/ois_figonacci}{figonacci}})}                       & dp                     & \ding{72} \ding{73} \ding{73} \ding{73} \ding{73} & \cref{sol figonacci}    \\
+		Discesa massima {(\protect{\texttt{\href{https://training.olinfo.it/task/discesa}{discesa}}})}               & dp                     & \ding{72} \ding{73} \ding{73} \ding{73} \ding{73} & \cref{sol discesa}      \\
+		Police 3 {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_police3}{\ttfamily police3}}})}        & dp                     & \ding{72} \ding{73} \ding{73} \ding{73} \ding{73} & \cref{sol police3}      \\
+		Piano degli studi {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_pianostudi}{pianostudi}}})}   & dp, binary search      & \ding{72} \ding{72} \ding{72} \ding{73} \ding{73} & \cref{sol pianostudi}   \\
+		Spiedini di frutta {(\protect{\texttt{\href{https://training.olinfo.it/task/oii_spiedini}{spiedini}}})}      & dp                     & \ding{72} \ding{72} \ding{73} \ding{73} \ding{73} & \cref{sol spiedini}     \\
+		K-step ancestor {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_treeancestor}{treeancestor}}})} & dp, graph              & \ding{72} \ding{72} \ding{73} \ding{73} \ding{73} & \cref{sol treeancestor} \\
+		Taglialegna {(\protect{\texttt{\href{https://training.olinfo.it/task/oii_taglialegna}{taglialegna}}})}       & dp, amortized analysis & \ding{72} \ding{72} \ding{72} \ding{72} \ding{72} & \cref{sol taglialegna}  \\
+		\bottomrule
+	\end{tabular}
+\end{center}
+\newpage
+
+\section{Soluzioni problemi sito OII}\label{soluzioni problemi oii}
+Di seguito una raccolta di soluzioni per i problemi proposti in \cref{problemi oii}. Per ogni problema è riportato il link alla pagina del problema e il link alla soluzione proposta in questa dispensa.
 \subsection{Figonacci {(\protect\texttt{\href{https://training.olinfo.it/task/ois_figonacci}{figonacci}})}}
+\label{sol figonacci}
 \begin{center}
 	\begin{tabularx}{\textwidth}{X r}
 		\toprule
@@ -684,8 +705,23 @@ Complessità: $ O\left(n \log n\right) $
 		\bottomrule
 	\end{tabularx}
 \end{center}
+L'idea qui è di "srotolare" la sommatoria, rendendosi conto che
+\begin{align*}
+	G_n & = \sum_{i=0}^{i=n-2} G_{n-1} - G_i                                                                                                       \\
+	    & = \left(G_{n-1} - G_{n-2}\right) + \left(G_{n-1} - G_{n-3}\right) + \ldots + \left(G_{n-1} - G_{1}\right) + \left(G_{n-1} - G_{0}\right) \\
+	    & = \left(n-1\right) G_{n-1} - \sum_{i=0}^{i = n-2} G_{i}                                                                                  \\
+	    & = \left(n-1\right) G_{n-1} + G_{n-1}-\left(n-2\right)G_{n-2} - G_{n-2}                                                                   \\
+	    & = \left(n-1\right) G_{n-1} - \left(n-1\right)f\left(n-2\right) + G_{n-1}                                                                 \\
+	    & = \left(n-1\right)  \left(G_{n-1} - G_{n-2}\right) + G_{n-1}
+\end{align*}
+abbiamo così ottenuto a tutti gli effetti una formula che possiamo applicare direttamente in forma ricorsiva(con \textit{memoization}) o iterativa:
+\begin{center}
+	\ttfamily
+	dp[i] = (i-1)(dp[i-1]*dp[i-2]) + dp[i-1]
+\end{center}
 
 \subsection{Discesa massima {(\protect{\texttt{\href{https://training.olinfo.it/task/discesa}{discesa}}})}}
+\label{sol discesa}
 \begin{center}
 	\begin{tabularx}{\textwidth}{X r}
 		\toprule
@@ -694,8 +730,48 @@ Complessità: $ O\left(n \log n\right) $
 		\bottomrule
 	\end{tabularx}
 \end{center}
+L'idea in questo caso è di creare un albero di discesa in cui in ogni posizione \verb|[i][j]| salviamo \textit{il maggior peso di una discesa che termina nella posizione \texttt{[i][j]}}.
+\vskip3mm
+Ad esempio, qui sotto è riportato a destra l'albero \verb|dp| per l'albero in input di sinistra
+\[
+	\begin{array}{c}
+		1                       \\
+		2 \quad  9              \\
+		3 \quad 7\quad 5        \\
+		8 \quad4\quad 11\quad 6 \\
+	\end{array}
+	\quad
+	\rightarrow
+	\quad
+	\begin{array}{c}
+		1                            \\
+		3 \quad  10                  \\
+		6 \quad 17\quad 15           \\
+		14 \quad 21\quad 28 \quad 21 \\
+	\end{array}
+\]
+rimane da capire come calcolare i valori nella file $ i $ esima basandosi sui precedenti. In particolare abbiamo 3 casi:
+\begin{itemize}
+	\item \textit{Primo elemento}: posso arrivare \textit{solo da destra}, quindi:
+	      \begin{center}
+		      \verb|dp[i][0]=dp[i-1][0] + w[i][0]|
+	      \end{center}
+	\item \textit{Ultimo elemento}: posso arrivare \textit{solo da sinistra}, quindi
+	      \begin{center}
+		      \verb|dp[i][size]=dp[i-1][size-1] + w[i][size]|
+	      \end{center}
+	\item \textit{Elemento in mezzo}: posso arrivare sia da sinistra che da destra, quindi dovro prendere la strada che fra le due ha peso maggiore:
+	      \begin{center}
+		      \verb|dp[i][j]=w[i][j] + max(dp[i][j], dp[i][j+1])|
+	      \end{center}
+\end{itemize}
+Chiaramente il caso base è quello riguardante il primo elemento, per cui il persorso di peso massimo è dato dal peso dell'elemento stesso.
+\vskip3mm
+Occorre ragionare un filo meglio sugli indici ma la logica rimane inalterata. Nota bene: \textit{è veramente necessario salvare l'intera matrice dp?}
+
 
 \subsection{Police 3 {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_police3}{\ttfamily police3}}})}}
+\label{sol police3}
 \begin{center}
 	\begin{tabularx}{\textwidth}{X r}
 		\toprule
@@ -704,17 +780,408 @@ Complessità: $ O\left(n \log n\right) $
 		\bottomrule
 	\end{tabularx}
 \end{center}
+L'idea qui è, per quanto banale possa semprare, ad ogni semaforo abbiamo due opzioni: fermarsi o meno. Per questa ragione possiamo salvare informazioni in due vettori \verb|dp|, per ciascuno dei due casi:
+\begin{itemize}
+	\item \verb|ts[i]|: salva in $ i $ il minor tempo per superare il semaforo $ i $ fermandosi a quest'ultimo
+	\item \verb|tr[i]|: salva in $ i $ il minor tempo per superare il semaforo $ i $, scappando
+\end{itemize}
+possiamo costruire i valori dei due vettori basandoci sui precedenti secondo la seguente logica
+\begin{itemize}
+	\item Se \textit{mi fermo} al semaforo $ i $-esimo, il tempo ideale sarà dato dall'attesa al semaforo + il tempo migliore ottenuto fermandosi o meno a quello precedente (posso scegliere di fermarmi oppure no, siccome non violo nessun vincolo in ogni caso)
+	      \begin{center}
+		      \ttfamily
+		      ts[i] = T[i] + min(tr[i - 1], ts[i - 1]);
+	      \end{center}
+	\item Se \textit{non mi fermo} al semaforo $ i $-esimo, il tempo ideale sarà dato dal tempo ideale per arrivare al semaforo $ i-1 $, fermandocisi (in questo caso devo assicurarmi di fermarmi al semaforo precedente per non violare alcun vincolo)
+	      \begin{center}
+		      \ttfamily
+		      tr[i] = ts[i - 1];
+	      \end{center}
+\end{itemize}
+Anche in questo caso, è davvero necessario salvare l'interi vettori in memoria?
 
+\subsection{Piano degli studi {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_pianostudi}{pianostudi}}})}}
+\label{sol pianostudi}
+\begin{center}
+	\begin{tabularx}{\textwidth}{X r}
+		\toprule
+		Problema sito OII  & \url{https://training.olinfo.it/task/ois_pianostudi}                        \\
+		Soluzione proposta & \ttfamily\href{run:./files/esercizi/pianostudi/}{files/esercizi/pianostudi} \\
+		\bottomrule
+	\end{tabularx}
+\end{center}
+
+\subsection{Police 4 {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_police4}{\ttfamily police4}}})}}
+\label{sol police4}
+\begin{center}
+	\begin{tabularx}{\textwidth}{X r}
+		\toprule
+		Problema sito OII  & \url{https://training.olinfo.it/task/ois_police4}                     \\
+		Soluzione proposta & \ttfamily\href{run:./files/esercizi/police4/}{files/esercizi/police4} \\
+		\bottomrule
+	\end{tabularx}
+\end{center}
+L'idea in questo caso è di salvare di volta il tempo minimo per arrivare al semaforo \verb|i| avendone saltati al più \verb|j|. Questa informazione può essere mantenuta in una matrice $ n \times r $, dove $ n $ è il numero di \textit{semafori} e $ r $ il numero massimo di semafori che \textit{possono essere saltati}.
+\vskip3mm
+La $ i $-esima colonna/riga della matrice può essere calcolata usando la precedente. In particolare, supponiamo di voler calcolare il tempo minore per arrivare al semaforo $ i $ saltandone al più $ j $. Allora ho due opzioni:
+\begin{itemize}
+	\item Arrivo al semaforo $ i-1 $ saltandone al massimo $ j-1 $. In questo caso il tempo ideale è quello ottenuto saltando il semaforo $ i-1 $
+	\item Arrivo al semaforo $ i-1 $ saltandone al più $ j $. In questo caso devo controllare se devo aspettare o meno. In caso affermativo devo aggiungere il tempo di attesa alla soluzione
+\end{itemize}
+La soluzione ottimale è data dalla migliore delle due. Formarlmente dati $ T $ e $ X $, rispettivamente l'intervalli dei semafori e il vettore delle posizioni, posso calcolare \verb|dp| come segue:
+\begin{center}
+	\begin{lstlisting}[language = cpp, frame = none]
+  t1 = dp[i-1][j-1];
+  t2 = dp[i-1][j] + (can_pass ? 0 : T-dp[i-1][j] % T);
+  dp[i][j] = min(t1, t2) + X[i] - X[i-1];
+\end{lstlisting}
+\end{center}
+\begin{center}
+	\ttfamily
+\end{center}
+
+\subsection{Spiedini di frutta {(\protect{\texttt{\href{https://training.olinfo.it/task/oii_spiedini}{spiedini}}})}}
+\label{sol spiedini}
+\begin{center}
+	\begin{tabularx}{\textwidth}{X r}
+		\toprule
+		Problema sito OII  & \url{https://training.olinfo.it/task/oii_spiedini}                      \\
+		Soluzione proposta & \ttfamily\href{run:./files/esercizi/spiedini/}{files/esercizi/spiedini} \\
+		\bottomrule
+	\end{tabularx}
+\end{center}
+L'idea è che una volta che uno spiedino è stato mangiato fino ad un certo punto da una parte, allora la soluzione ideale è prefissata e consiste nel mangiarlo dalla parte opposta finchè è possibile. La chiave sta tuttavia nel comprendere che non è necessario calcolare tutta la somma da capo ad ogni iterazione, ma possiamo seguire questa logica:
+\begin{itemize}
+	\item Mangio lo spiedino \textit{da sinistra} fino all'ultima fragola che permette di \textit{non} superare la soglia. Tengo sempre traccia della soglia corrente
+	\item Partendo \textit{da destra} mangio lo spiedino fino a quando la soglia lo permette
+	\item Tengo traccia del numero di fragole mangiate
+	      i
+\end{itemize}
+Dopodichè, ripeto questi step fino a quanto non raggiungo l'estremità sinistra dello spiedino:
+\begin{itemize}
+	\item Da sinistra, scorro fino alla fragola precedente, abbassando la soglia
+	\item Da destra scorro fino all'ultima fragola che riesco ad includere, aggiornando soglia e quantità di fragole mangiate
+\end{itemize}
+La soluzione migliore ottenuta in ogni step dell'iterazione precedente è la soluzione ottimale al problema
+
+\subsection{K-step ancestor {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_treeancestor}{treeancestor}}})}}
+\label{sol treeancestor}
+\begin{center}
+	\begin{tabularx}{\textwidth}{X r}
+		\toprule
+		Problema sito OII  & \url{https://training.olinfo.it/task/ois_treeancestor}                          \\
+		Soluzione proposta & \ttfamily\href{run:./files/esercizi/treeancestor/}{files/esercizi/treeancestor} \\
+		\bottomrule
+	\end{tabularx}
+\end{center}
+La soluzione sta nell'esplorare l'albero tenendo traccia della profondità corrente e del tragitto che ha portato fino al nodo che stiamo attualmente visitato. Possiamo fare ciò tramite 2 variabili \verb|depth| e \verb|path[n]|
+\vskip3mm
+Dato che il grado in questo caso è semplicemente un albero, possiamo sfruttare anche una semplice \href{https://en.wikipedia.org/wiki/Depth-first_search}{DFS}, dato che possiamo essere sicuri che il path che ci porta a ciascun nodo è unico.
+\vskip3mm
+Per ciascun nodo, controlliamo se la depth è maggiore o minore di $ K $. Nel primo caso sfruttiamo l'array contenente il path per assegnare il valore del $ k $-ancestor, nel secondo semplicemente assegnamo -1. Formalmente:
+\begin{lstlisting}[language = java, frame = none]
+if (depth >= K) {
+  ancestor[node] = path[depth - K];
+} else {
+  ancestor[node] = -1;
+}
+\end{lstlisting}
+nella DFS chiamiamo ricorsivamente la funzione con un valore di \verb|depth| incrementato di 1 ogni volta
+
+\subsection{Taglialegna {(\protect{\texttt{\href{https://training.olinfo.it/task/oii_taglialegna}{taglialegna}}})}}
+\label{sol taglialegna}
+\begin{center}
+	\begin{tabularx}{\textwidth}{X r}
+		\toprule
+		Problema sito OII  & \url{https://training.olinfo.it/task/oii_taglialegna}                         \\
+		Soluzione proposta & \ttfamily\href{run:./files/esercizi/taglialegna/}{files/esercizi/taglialegna} \\
+		\bottomrule
+	\end{tabularx}
+\end{center}
+Il problema è piuttosto avanzato, per questo è necessario fare delle osservazioni preliminari che torneranno utili dopo.
+\begin{enumerate}
+	\item In una soluzione ottima ho 3 opzioni:
+	      \begin{enumerate}
+		      \item L'ultimo albero a destra viene tagliato e fatto cadere a \textit{sinistra}
+		      \item L'ultimo albero a destra viene tagliato e fatto cadere a \textit{destra}
+		      \item L'ultimo albero a destra \textit{non} viene tagliato ma fatto cadere a \textit{destra} per "effetto domino"
+	      \end{enumerate}
+	      L'idea importante è che in una soluzione ottima l'ultimo albero a destra, se cade a sinistra è perchè è stato tagliato e fatto cadere a sinistra. Per quanto sia ovvio è molto importante per capire gli step successivi
+	\item Gli unici punti in cui si può interrompere l'effetto domino sono i punti in cui vi sono alberi di altezza 1
+	\item Per quanto detto al punto precedente, possiamo vedere il problema come una serie di intervalli che errano fatti cadere in una delle due direzioni. Agli estremi di questi intervalli ci sono alberi di altezza 1
+	\item Quando avviene un effetto domino, non tutti gli alberi partecipano nella catena della caduta. In particolare un albero può essere abbattuto da un albero che non è quello precedente nella catena. Chiameremo questo albero \verb|ff|(first-falling) di \verb|i|. Possiamo quindi considerare l'effetto domino solo per gli alberi abbattitori, nel modo seguente:
+	      \[
+		      i \rightarrow \operatorname{ff}\left[i\right] \rightarrow \operatorname{ff}\left[\operatorname{ff}\left[i\right]\right] \rightarrow \ldots
+	      \]
+\end{enumerate}
+Detto questo, individuiamo il sotto-problema di programmazione dinamica e il caso base. In particolare sappiamo che:
+\begin{itemize}
+	\item Il sotto-problema consiste nel calcolare il \textit{il numero minore di tagli} per abbattere gli alberi da 0 a i
+	\item Il caso base è quanto $ n=1 $, ossia quando ho un solo albero. In questo caso la soluzione è fare un unico taglio
+\end{itemize}
+\hypertarget{taglialegna solution steps}{}Rimane ora capire come utilizzare le soluzioni ottime da 0 a $ i-1 $ per calcolare la $ i $-esima soluzione ideale. Possiamo ragionare così per calcolare la soluzione ottimale $ i $-esima:
+\begin{itemize}
+	\item Se l'albero viene \textit{tagliato a sinistra}, allora simulo l'effetto domino e verifico dove questo si interrompe. Supponendo che la catena abbia fatto cadere $ k $ alberi, allora
+	      \begin{center}
+		      \ttfamily
+		      solution[i] = 1 + solution[i-k-1]
+	      \end{center}
+	\item Se l'albero viene \textit{tagliato a destra}, allora non rimane che pulire in maniera ottimale gli alberi da 0 a $ i-1 $, quindi:
+	      \begin{center}
+		      \ttfamily
+		      solution[i] = 1 + solution[i-1]
+	      \end{center}
+	\item Se l'albero viene \textit{fatto cadere a destra}, allora all'interno della \textit{catena dei first-fall} devo capire quale albero è più conveniente tagliare per innescare l'effetto domino. Chiamando questo albero \verb|opt|, allora la soluzione ottimale è data da
+	      \begin{center}
+		      \ttfamily
+		      solution[i] = 1 + solution[opt-1]
+	      \end{center}
+\end{itemize}
+Andiamo ora ad elencare le strutture dati che ci aiuteranno nel calcolo progressivo del vettore \verb|solution|
+\begin{itemize}
+	\item \verb|lb[i]|: \textit{left-bound}, contiene nella posizione $ i $ l'indice fino al quali gli alberi cadono se l'albero $ i $ viene tagliato a \textit{sinistra}
+	\item \verb|rb[i]|:\textit{right-bound}, contiene nella posizione $ i $ l'indice fino al quali gli alberi cadono se l'albero $ i $ viene tagliato a \textit{destra}
+	\item \verb|ff[i]|: \textit{first-fall}, come descritto precedentemente, il primo albero alla sinistra di $ i $ che in un effetto a catena colpisce $ i $
+\end{itemize}
+\hypertarget{taglialegna dp data}{}Come vedremo, possiamo calcolare tutti questi vettori in tempo $ O\left(n\right) $
+
+%int solution[n];
+
+%// In which direction should I cut the last tree in order to obtain i-th
+%// optimal solution: 0=left 1=right
+%bool dir[n];
+
+%// Saves the optimal spot to to start the domino effect when making the trees
+%// fall to the right
+%int opt_split[n];
+
+%// Saves the first tree to cut in the i-th optimal solution
+%int first_cut[n];
 
 \begin{itemize}
-	\item Police 3 (\protect{\texttt{\href{https://training.olinfo.it/task/ois_police3}{\ttfamily police3}}})
-	\item Piano degli studi (\protect{\texttt{\href{https://training.olinfo.it/task/ois_pianostudi}{pianostudi}}})
-	\item Police 4 (\protect{\texttt{\href{https://training.olinfo.it/task/ois_police4}{\ttfamily police4}}})
-	\item Spiedini di frutta (\protect{\texttt{\href{https://training.olinfo.it/task/oii_spiedini}{spiedini}}})
-	\item K-step ancestor (\protect{\texttt{\href{https://training.olinfo.it/task/ois_treeancestor}{treeancestor}}})
-	\item Taglialegna (\protect{\texttt{\href{https://training.olinfo.it/task/oii_taglialegna}{taglialegna}}})
+	\item \verb|solution[i]|: il vettore \textit{dp} principale. Salva la soluzione ottimale per il range $ \left[0,i\right] $
+	\item \verb|dir[i]|: il vettore che contiene la direzione in cui va tagliato il primo albero per ottenere la soluzione ottimale
+	\item \verb|opt_split[i]|: \textit{optimal-split}, salva la posizione ottimale per dare inizio all'effetto domino nella soluzione migliore in cui l'ultimo albero cade a destra
+	\item \verb|first_cut[i]|: salva l'indice del primo albero da tagliare nella $ i $-esima sotto soluzione ottimale
 \end{itemize}
+\hypertarget{taglialegna step 1}{}\sfblue{Parte 1:} calcolo \verb|lb|, \verb|rb|
+\vskip3mm
+Partiamo dal calcolo dei vettori \verb|lb| e \verb|rb|. L'idea è proprio quella di simulare a tutti gli effetti l'effetto domino. In particolare, pensiamo di avere una serie di intervalli che cadono per effetto domino e un albero che viene fatto cadere a sinistra:
 
+\begin{figure}[H]
+	\begin{center}
+		\begin{tikzpicture}
+			\node (a)[whitedot, minimum width=1cm] at (0,0) {$ k_n $};
+			\node (b)[whitedot, minimum width=1cm] at (2,0) {$k_{n-1}$};
+			\node (c)[whitedot, minimum width=1cm] at (4,0) {$k_2$};
+			\node (d)[whitedot, minimum width=1cm] at (6,0) {$k_1$};
+			\node (e)[whitedot, minimum width=1cm] at (9,0) {$ i $};
 
+			\draw [latex-latex, thick](a)--(b) node [midway, below]{$ n $};
+			\draw [latex-latex, dashed](b)--(c) node [midway, below]{$ \ldots  $};
+			\draw [latex-latex, thick](c)--(d) node [midway, below]{$ 2 $};
+			\draw [latex-latex, thick](d)--(e) node [midway, below]{$ 1 $};
+
+			\draw [-latex][ultra thick](e)--++(0,8);
+			% \draw [latex-latex, thick](5,0)--(8,0) node [midway, below]{d};
+			\draw [dashed, -latex](e)++(0,8)to[out=180, in = 90](1,0);
+			\node[fit=(current bounding box.south west)(current bounding box.north east)] {};
+		\end{tikzpicture}
+	\end{center}
+	\caption{Calcolo left-bound}
+	\label{calcolo left bound}
+\end{figure}
+In questa figura, sappaimo già che gli intervalli da 1 a $ n $ cadono a sinistra per effetto domino, interrompendosi nei punti $ k_2, \ldots , k_n $. \verb|lb[i]| sarà quindi dato da valore più basso fra i \verb|lb| degli intervalli che l'albero abbatte sicuramente, ossia tutti gli intervalli il cui albero più a destra viene abbattuto dall'albero $ i $. In figura, questi sono precisamente gli intervalli $ 1, \ldots , n $. Più formalmente
+
+\begin{algoritmo*}{Calcolo left-bound}
+	\begin{algorithm}[H]
+		\SetKwFunction{FComputeLeftBound}{compute\_left\_bound}
+		\Fn{\Int$\left[\right]$ \FComputeLeftBound{$n, h$}}{
+		\Int $ lb  \leftarrow $ \New \Int $[0\ldots n-1]$\;
+		% \Int lb $ \leftarrow $ \New~\Int[n]\;
+		\For{$i \leftarrow 0$ \KwTo $n-1$}{
+		$lb[i] \leftarrow i$\;
+		\While{$lb[i] > 0 \land lb[i] > i - h[i] + 1$}{
+		$lb[i] \leftarrow lb[\,lb[i] - 1\,]$\;
+		}
+		}
+		\Return{$lb$}\;
+		}
+	\end{algorithm}
+\end{algoritmo*}
+Il calcolo del vettore \verb|rb| è speculare, ma segue la medesima logica.
+\vskip3mm
+Ora è fondamentale discurete la complessità di questa funzione. Potremmo in un primo momento pensare \textit{erroneamente} che la funzione abbia complessità di $ O\left(n^2 \right) $, dato che il ciclo esterno scorre l'interno vettore e, nel caso peggiore, anche quello interno scorre tutti gli elementi da $ i $ a 0. Tuttavia, il ragionamento è un filo più sottile.
+\vskip3mm
+Diciamo che un albero viene \textit{saltato da $ i $} se all'interno del ciclo while che calcola \verb|lb[i]| viene utilizzato per aggiornare il valore di \textit{lower-bound}
+\[
+	lb[i] \leftarrow lb[\underbracket[0.1ex]{lb[i] - 1}_{\text{saltato}}]
+\]
+Aiutandoci con la figura \ref{calcolo left bound}, possiamo intuire che gli alberi saltati, nel calcolo di \verb|lb[i]|, sono dati da $ k_1, k_2, \ldots k_{n-1} $. La chiave sta nel capire che \underline{ogni albero può essere saltato una volta sola}. Questo avviene in quanto, supponendo che gli alberi $ k_1,\ldots k_{n - 1} $ vengano saltati dall'albero $ i $, allora nelle iterazioni successive questi non possono più essere saltati, in quanto al più verrà saltato prima l'albero $ i $, il quale avrà un \textit{left-bound} minore di $ k_{n-1} $, quindi tutto il range in cui stanno gli alberi $ k_1,\ldots k_{n-1} $ non verrà considerato nella computazione.
+\vskip3mm
+Quindi, ancora una volta, siccome ogni albero viene saltato una e una sola volta, la riga $ 	lb[i] \leftarrow lb[lb[i] - 1]$ del ciclo while viene eseguita al più $ n $ volte, portando ad una complessità totale di $ O\left(n\right) $
+\vskip3mm
+\hypertarget{taglialegna step 2}{}\sfblue{Parte 2:} calcolo \verb|ff|
+\vskip3mm
+Il calcolo di \verb|ff| può implementato in maniera piuttosto semplice con piccolissime modifiche alla funzione che calcola \verb|rb|. Sempre riferendoci a \cref{calcolo left bound}, possiamo notare che il primo albero ad abbattere gli alberi $ k_1,\ldots ,k_{n-1} $ in una catena di abbattitori è $ i $. Per questo motivo ogni volta che calcoliamo \verb|rb[i]| possiamo anche aggiornare il valore per \verb|ff| degli alberi $ k_1,\ldots k_{n-1} $. Formalmente:
+\begin{algoritmo*}{Calcolo right-bound e first-fall}
+	\begin{algorithm}[H]
+		\SetKwFunction{FComputeRightBound}{compute\_rb\_ff}
+		\Fn{\Int[] \FComputeRightBound{$n, h$}}{
+			\Int $rb \leftarrow$ \New \Int $[0\ldots n-1]$\;
+			\Int $ff \leftarrow$ \New \Int $[0\ldots n-1]$\;
+			\For{$i \leftarrow n-1$ \Downto $0$}{
+				$rb[i] \leftarrow i$\;
+				$ff[i] \leftarrow -1$\;
+				\While{$ rb[i] < n-1 $ \And $ rb[i] < i + h[i] - 1 $}{
+					$ ff[rb[i] + 1] \leftarrow i $\;
+					$ rb[i] \leftarrow rb[rb[i] + 1] $\;
+				}
+			}
+			\Return{rb, ff}\;
+		}
+	\end{algorithm}
+\end{algoritmo*}
+La complessità rimane sempre $ O\left(n\right) $
+
+\vskip3mm
+\hypertarget{taglialegna step 3}{}\sfblue{Parte 3:} calcolo \verb|solution|
+\vskip3mm
+Innanzitutto, ci appoggeremo alle strutture dati \verb|dp| descritte \hyperlink{taglialegna dp data}{qui}. Per calcolare il vettore \verb|solution|, gli step sono, dal punto di vista logico, quelli descritti \hyperlink{taglialegna solution steps}{qui}. Descriviamo più nel dettaglio le 2 casistiche:
+\begin{itemize}
+	\item Taglio a sinistra:
+	      \begin{lstlisting}[language = cpp, frame = none]
+solution[i] = 1 + (lb[i] > 0 ? solution[lb[i] - 1] : 0);
+opt_cut[i] = i;
+dir[i] = 0;\end{lstlisting}%
+	\item Albero cade a destra:
+	      \begin{itemize}
+		      \item Taglio a destra:
+		            \begin{lstlisting}[language = cpp, frame = none]
+solution[i] = 1 + (idx2 > 0 ? solution[i - 1] : 0);
+\end{lstlisting}
+		      \item Albero abbattuto a destra per effetto domino:
+		            \begin{lstlisting}[language = cpp, frame = none]
+split_index = opt_split[ff[i]]; // Optimal index to cut the tree
+solution[i] = 1 + (idx1 > 0 ? solution[split_index - 1] : 0);
+\end{lstlisting}
+	      \end{itemize}
+\end{itemize}
+Ora ci rimane solo da aggiornare il vettore \verb|opt_cut|, così da rendere l'intero algoritmo efficiente. Anche qui la programmazione dinamica viene in nostro soccorso. Più in particolare, so che supponendo che la catena di $ k $ first fall che abbattono $ i $ sia composta dagli alberi $ 1,2,\ldots ,k-1,i $. Allora so già che fra i primi $ k-1 $ il migliore è dato da \verb|opt_split[k-1]|, non rimane che testare l'ultimo, ossia il caso in cui $ i $ è abbattuto a destra. Nel caso la soluzione migliore si ottenesse con la prima opzione, allora \verb|opt_split[i]=opt_split[ff[i]]|, altrimenti \verb|opt_split[i] = i|
+\vskip3mm
+Chiaramente, scorrendo ogni elemento del vettore una sola volta, la funzione ha complessità $ O\left(n\right) $
+
+\begin{algoritmo*}{Calcolo soluzione}
+	\begin{algorithm}[H]
+		% \caption{Compute optimal cuts for trees (DP)}
+		% \label{alg:forest-dp-func}
+
+		% \KwIn{$n$, arrays $lb[1..n]$, $rb[1..n]$, $ff[1..n]$}
+		% \KwOut{$solution[1..n]$, $first\_cut[1..n]$, $dir[1..n]$, $opt\_split[1..n]$}
+		\SetKwFunction{FComputeSolution}{compute\_solution}
+		\Fn{\FComputeSolution{$n, lb, rb, ff$}}{
+			\vskip3mm
+			$solution[0] \leftarrow 1$\;
+			$dir[0] \leftarrow 1$\;
+			$opt\_split[0] \leftarrow 0$\;
+			$first\_cut[0] \leftarrow 0$\;
+
+			\vskip3mm
+			\For{$i \leftarrow 1$ \KwTo $n$}{
+				\vskip3mm
+				% Case 1: last tree is cut to the left
+				\Comment{Case 1: last tree is cut to the left}
+				$sol_{1} \leftarrow 1 + $\leIf{$ lb[i] > 0 $}{$solution[lb[i] - 1]$}{$0$}
+				$cut_{1} \leftarrow i$\;
+				$dir_{1} \leftarrow \KwFalse$\;
+
+				\vskip3mm
+				% Case 2: last tree falls to the right
+				\Comment{Case 2: last tree falls to the right}
+				\If{$ff[i] \neq -1$}{
+
+					\vskip3mm
+					% Case 2.1: tree falls for domino effect
+					\Comment{Case 2.1: tree falls by domino effect}
+					$idx_{1} \leftarrow opt\_split[ff[i]]$\;
+					$sol_{21} \leftarrow 1 + $\leIf{$idx_{1} > 0$}{$solution[idx_{1} - 1]$}{$0$}
+
+					\vskip3mm
+					% Case 2.2: tree is cut to the right
+					\Comment{Case 2.2: tree is cut to the right}
+					$idx_{2} \leftarrow i$\;
+					$sol_{22} \leftarrow 1 + $\leIf{$idx_{2} > 0$}{$solution[idx_{2} - 1]$}{$0$}
+
+					\vskip3mm
+					$opt\_split[i] \leftarrow $\leIf{$sol_{21} < sol_{22}$}{$ idx_{1} $}{$ idx_{2} $}
+				}
+				\Else{
+					$opt\_split[i] \leftarrow i$\;
+				}
+
+				\vskip3mm
+				$sol_{2} \leftarrow 1 + $\leIf{$opt\_split[i] > 0$}{$solution[opt\_split[i] - 1]$}{$0$}
+
+				$cut_{2} \leftarrow opt\_split[i]$\;
+				$dir_{2} \leftarrow \KwTrue$\;
+
+				\vskip3mm
+				% Saving better solution
+				\If{$sol_{1} < sol_{2}$}{
+					$solution[i] \leftarrow sol_{1}$\;
+					$first\_cut[i] \leftarrow cut_{1}$\;
+					$dir[i] \leftarrow dir_{1}$\;
+				}
+				\Else{
+					$solution[i] \leftarrow sol_{2}$\;
+					$first\_cut[i] \leftarrow cut_{2}$\;
+					$dir[i] \leftarrow dir_{2}$\;
+				}
+			}
+
+			\Return{$solution, first\_cut, dir$}\;
+		}
+	\end{algorithm}
+\end{algoritmo*}
+
+\vskip3mm
+\hypertarget{taglialegna step 4}{}\sfblue{Parte 4:} ricostruire la soluzione
+\vskip3mm
+Una volta calcolati i vettori \verb|solution|, \verb|first_cut| e \verb|dir| è piuttosto immediato ricostruire la soluzione "risalendo" al contrario i tagli che sono stati fatti:
+\begin{algoritmo}{Ricostruzione soluzione}
+	\begin{algorithm}[H]
+
+		\SetKwFunction{FReconstructSolution}{reconstruct\_solution}
+		\SetKwFunction{FAbbatti}{abbatti}
+		\Fn{\FReconstructSolution{$n, first\_cut, dir$}}{
+			$pos \leftarrow n - 1$\;
+			\While{$pos \ge 0$}{
+
+				\FAbbatti{$first\_cut[pos], dir[pos]$}\;
+
+				\If{$dir[pos] = \KwFalse$}{
+					$pos \leftarrow lb[pos] - 1$\;
+				}
+				\Else{
+					$pos \leftarrow first\_cut[pos] - 1$\;
+				}
+			}
+		}
+	\end{algorithm}
+\end{algoritmo}
+Complessivamente, abbiamo che
+\begin{center}
+	\begin{tabular}{l l l}
+		\toprule
+		Step                                   & task                                                 & complessità          \\
+		\midrule
+		\hyperlink{taglialegna step 1}{Step 1} & calcolo \verb|lb|, \verb|rb|                         & $ O\left(n\right) $  \\
+		\hyperlink{taglialegna step 2}{Step 2} & calcolo \verb|ff|                                    & $ O\left(n\right) $  \\
+		\hyperlink{taglialegna step 3}{Step 3} & calcolo \verb|solution|, \verb|dir|, \verb|best_cut| & $ O\left(n\right) $  \\
+		\hyperlink{taglialegna step 4}{Step 4} & ricostruisco soluzione                               & $  O\left(n\right) $ \\
+		\bottomrule
+	\end{tabular}
+\end{center}
+Complessità totale: $ O\left(n\right) $
 
 \end{document}
