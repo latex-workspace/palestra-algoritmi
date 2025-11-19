@@ -1621,7 +1621,214 @@ L'idea è molto simile al problema \hyperref[uniquepaths]{Unique paths}, con l'u
 	\end{bmatrix}
 \end{gather*}
 
+\section{Strutture dati di cpp}
+Nella standard library di C++ sono presenti diverse strutture dati che possono essere utili per implementare algoritmi di programmazione dinamica. Di seguito una breve panoramica delle più comuni.
 
+\subsection{Vector}
+Il vector fornisce un array dinamico, che può quindi cambiare la sua dimensione dinamicamente in maniera efficiente. Le operazioni principali che ci fornisce consistono nell'inserimento di elementi in fondo e accesso tramite indice in tempo costante
+\vskip3mm
+\begin{center}
+	\ttfamily
+	std::vector<\color{mutedblue}{type}> v(\color{mutedblue}{size}, \color{mutedblue}{initial\_value}); \\
+\end{center}
+
+\begin{center}
+	\begin{tabularx}{\textwidth}{l l X}
+		\toprule
+		\sfblue{Funzione}            & \sfblue{Complessità} & \sfblue{Descrizione}                          \\
+		\midrule
+
+		\ttfamily v.size()           & $O(1)$               & Restituisce il numero di elementi contenuti   \\
+
+		\ttfamily v.empty()          & $O(1)$               & Ritorna \texttt{true} se il vettore è vuoto   \\
+
+		\ttfamily v.push\_back(x)    & $O(1)^{*}$           & Aggiunge un elemento in fondo; può riallocare \\
+
+		\ttfamily v.pop\_back()      & $O(1)$               & Rimuove l’ultimo elemento                     \\
+
+		\ttfamily v[i]               & $O(1)$               & Accesso diretto senza controlli               \\
+
+		\ttfamily v.at(i)            & $O(1)$               & Accesso controllato con verifica dell’indice  \\
+
+		\ttfamily v.front()          & $O(1)$               & Ritorna riferimento al primo elemento         \\
+
+		\ttfamily v.back()           & $O(1)$               & Ritorna riferimento all’ultimo elemento       \\
+
+		\ttfamily v.begin(), v.end() & $O(1)$               & Ritorna iteratori di inizio e fine            \\
+
+		\ttfamily v.insert(pos, x)   & $O(n)$               & Inserisce un elemento nell'indice specificato \\
+
+		\ttfamily v.erase(pos)       & $O(n)$               & Rimuove un elemento all'indice specificato    \\
+
+		\ttfamily v.clear()          & $O(n)$               & Rimuove tutti gli elementi                    \\
+
+		\ttfamily v.resize(n)        & $O(n)$               & Cambia la dimensione logica del vettore       \\
+
+		\bottomrule
+	\end{tabularx}
+\end{center}
+Con $ ^{*} $ si indica la complessità ammortizzata. Detta "stringi stringi", significa che l'operazione singola può avere complessità superiore a quella indicata, ma su una successione di operazioni possiamo essere sicuri che il costo medio sia quello indicato
+
+\subsection{Stack}
+Lo \texttt{stack} implementa una struttura LIFO (Last In, First Out), in cui l'ultimo elemento inserito è il primo a essere rimosso.
+È molto efficiente e tipicamente utilizzato per gestire operazioni annidate, backtracking e funzioni ricorsive.
+
+\vskip3mm
+\begin{center}
+	\ttfamily
+	std::stack<\color{mutedblue}{type}> s;
+\end{center}
+
+\begin{center}
+	\begin{tabularx}{\textwidth}{l l X}
+		\toprule
+		\sfblue{Funzione}   & \sfblue{Complessità} & \sfblue{Descrizione}                      \\
+		\midrule
+		\ttfamily s.size()  & $O(1)$               & Restituisce il numero di elementi         \\
+		\ttfamily s.empty() & $O(1)$               & Ritorna \texttt{true} se lo stack è vuoto \\
+		\ttfamily s.push(x) & $O(1)$               & Inserisce un elemento in cima             \\
+		\ttfamily s.pop()   & $O(1)$               & Rimuove l'elemento in cima                \\
+		\ttfamily s.top()   & $O(1)$               & Ritorna riferimento all’elemento in cima  \\
+		\bottomrule
+	\end{tabularx}
+\end{center}
+
+\subsection{Queue}
+La \texttt{queue} implementa una struttura FIFO (First In, First Out), in cui il primo elemento inserito è il primo a uscire.
+È ideale per modellare code, buffer circolari o processi di scheduling.
+
+\vskip3mm
+\begin{center}
+	\ttfamily
+	std::queue<\color{mutedblue}{type}> q;
+\end{center}
+
+\begin{center}
+	\begin{tabularx}{\textwidth}{l l X}
+		\toprule
+		\sfblue{Funzione}   & \sfblue{Complessità} & \sfblue{Descrizione}                      \\
+		\midrule
+		\ttfamily q.size()  & $O(1)$               & Restituisce il numero di elementi         \\
+		\ttfamily q.empty() & $O(1)$               & Ritorna \texttt{true} se la queue è vuota \\
+		\ttfamily q.push(x) & $O(1)$               & Inserisce un elemento in fondo            \\
+		\ttfamily q.pop()   & $O(1)$               & Rimuove l'elemento frontale               \\
+		\ttfamily q.front() & $O(1)$               & Riferimento al primo elemento             \\
+		\ttfamily q.back()  & $O(1)$               & Riferimento all’ultimo elemento           \\
+		\bottomrule
+	\end{tabularx}
+\end{center}
+
+\subsection{Priority Queue}\label{priority queue}
+La \texttt{priority\_queue} è una coda con priorità implementata solitamente tramite \textit{heap}. Permette di estrarre sempre l’elemento con valore massimo (o minimo, se configurata come min-heap) in maniera efficiente (tempo costante).
+
+\vskip3mm
+\begin{center}
+	\ttfamily
+	std::priority\_queue<\color{mutedblue}{type}> pq;
+\end{center}
+
+\begin{center}
+	\begin{tabularx}{\textwidth}{l l X}
+		\toprule
+		\sfblue{Funzione}    & \sfblue{Complessità} & \sfblue{Descrizione}                     \\
+		\midrule
+
+		\ttfamily pq.size()  & $O(1)$               & Numero di elementi                       \\
+		\ttfamily pq.empty() & $O(1)$               & \texttt{true} se vuota                   \\
+		\ttfamily pq.top()   & $O(1)$               & Ritorna l'elemento con priorità più alta \\
+		\ttfamily pq.push(x) & $O(\log n)$          & Inserisce un elemento preservando l’heap \\
+		\ttfamily pq.pop()   & $O(\log n)$          & Rimuove l’elemento con priorità più alta \\
+		\bottomrule
+	\end{tabularx}
+\end{center}
+Questa struttura dati, a differenza di vettori, stack, queue e altre ha bisogno che il tipo di elemento contenuto implementi l'operatore \verb|<| (dal punto di vista logico risulta impossibile creare questa struttura dati se non esiste un criterio secondo il quale possiamo ordinare gli elementi)
+
+\subsection{Set}
+Il \texttt{set} è una struttura che contiene elementi unici, ordinati secondo un comparatore (\verb|std::less<>| di default). Utile quando abbiamo bisogno di tenere una collezione di dati che risulta ordinata ad ogni momento. Internamente è implementato come un albero bilanciato Red-Black, che garantisce prestazioni logaritmiche.
+
+\vskip3mm
+\begin{center}
+	\ttfamily
+	std::set<\color{mutedblue}{type}> s;
+\end{center}
+
+\begin{center}
+	\begin{tabularx}{\textwidth}{l l X}
+		\toprule
+		\sfblue{Funzione}            & \sfblue{Complessità} & \sfblue{Descrizione}                        \\
+		\midrule
+
+		\ttfamily s.size()           & $O(1)$               & Numero di elementi                          \\
+		\ttfamily s.empty()          & $O(1)$               & \texttt{true} se vuoto                      \\
+		\ttfamily s.insert(x)        & $O(\log n)$          & Inserisce un elemento (se non presente)     \\
+		\ttfamily s.erase(x)         & $O(\log n)$          & Rimuove un elemento                         \\
+		\ttfamily s.find(x)          & $O(\log n)$          & Ritorna iteratore all'elemento, se presente \\
+		\ttfamily s.count(x)         & $O(\log n)$          & Ritorna 1 se presente, 0 altrimenti         \\
+		\ttfamily s.begin(), s.end() & $O(1)$               & Iteratori inizio/fine                       \\
+		\ttfamily s.lower\_bound(x)  & $O(\log n)$          & Primo elemento $ \ge $ x                    \\
+
+		\bottomrule
+	\end{tabularx}
+\end{center}
+Nota che a differenza della priority queue (\cref{priority queue}), \textit{ogni} elemento del set è ordinato, mentre la priority queue garantisce l'accesso solo al maggiore/minore
+
+\subsection{Map}
+La \texttt{map} è una struttura associativa che conserva coppie chiave–valore, ordinate secondo un comparatore sulla chiave. Anche qui l’implementazione è basata su un albero Red-Black.
+
+\vskip3mm
+\begin{center}
+	\ttfamily
+	std::map<\color{mutedblue}{key\_type}, \color{mutedblue}{value\_type}> m;
+\end{center}
+
+\begin{center}
+	\begin{tabularx}{\textwidth}{l l X}
+		\toprule
+		\sfblue{Funzione}      & \sfblue{Complessità} & \sfblue{Descrizione}                           \\
+		\midrule
+
+		\ttfamily m.size()     & $O(1)$               & Numero di elementi                             \\
+		\ttfamily m.empty()    & $O(1)$               & True se vuota                                  \\
+		\ttfamily m.insert(kv) & $O(\log n)$          & Inserisce una coppia chiave–valore             \\
+		\ttfamily m.erase(k)   & $O(\log n)$          & Rimuove la chiave                              \\
+		\ttfamily m.find(k)    & $O(\log n)$          & Trova la chiave                                \\
+		\ttfamily m.count(k)   & $O(\log n)$          & 1 se presente, 0 altrimenti                    \\
+		\ttfamily m[k]         & $O(\log n)$          & Accesso/creazione valore associato alla chiave \\
+		\ttfamily m.at(k)      & $O(\log n)$          & Accesso con controllo (senza creare)           \\
+
+		\bottomrule
+	\end{tabularx}
+\end{center}
+
+\subsection{Unordered Map}
+La \texttt{unordered\_map} implementa una tabella hash, che permette operazioni di accesso e inserimento in tempo medio costante.
+L'ordine degli elementi non è definito.
+
+\vskip3mm
+\begin{center}
+	\ttfamily
+	std::unordered\_map<\color{mutedblue}{key\_type}, \color{mutedblue}{value\_type}> um;
+\end{center}
+
+\begin{center}
+	\begin{tabularx}{\textwidth}{l l X}
+		\toprule
+		\sfblue{Funzione}         & \sfblue{Complessità}        & \sfblue{Descrizione}             \\
+		\midrule
+
+		\ttfamily um.size()       & $O(1)$                      & Numero di elementi               \\
+		\ttfamily um.empty()      & $O(1)$                      & True se vuota                    \\
+		\ttfamily um.insert(k, v) & Medio $O(1)$ / Worst $O(n)$ & Inserisce o aggiorna un elemento \\
+		\ttfamily um.erase(k)     & Medio $O(1)$ / Worst $O(n)$ & Rimuove la chiave                \\
+		\ttfamily um.find(k)      & Medio $O(1)$ / Worst $O(n)$ & Trova la chiave                  \\
+		\ttfamily um.count(k)     & Medio $O(1)$ / Worst $O(n)$ & True se presente                 \\
+		\ttfamily um[k]           & Medio $O(1)$ / Worst $O(n)$ & Accesso/creazione valore         \\
+		\ttfamily um.at(k)        & $O(1)$                      & Accesso con controllo            \\
+
+		\bottomrule
+	\end{tabularx}
+\end{center}
+Nota come dal punto di vista della performance, la \texttt{unordered\_map} sia preferibile alla \texttt{map}. Quindi va preferita la texttt{map} solo nel caso in cui sia necessario avere le chiavi \textit{sempre} ordinate
 
 \section{Problemi sito oii consigliati}\label{problemi oii}
 Di seguito una raccolta di problemi provenienti dal sito degli allenamenti della OII. Sono proposte delle soluzioni in sezione \cref{soluzioni problemi oii}
@@ -1635,9 +1842,11 @@ Di seguito una raccolta di problemi provenienti dal sito degli allenamenti della
 		Discesa massima {(\protect{\texttt{\href{https://training.olinfo.it/task/discesa}{discesa}}})}               & dp                     & \ding{72} \ding{73} \ding{73} \ding{73} \ding{73} & \cref{sol discesa}      \\
 		Police 3 {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_police3}{\ttfamily police3}}})}        & dp                     & \ding{72} \ding{73} \ding{73} \ding{73} \ding{73} & \cref{sol police3}      \\
 		Piano degli studi {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_pianostudi}{pianostudi}}})}   & dp, binary search      & \ding{72} \ding{72} \ding{72} \ding{73} \ding{73} & \cref{sol pianostudi}   \\
+		Police 4 {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_police4}{\ttfamily police4}}})}        & dp                     & \ding{72} \ding{72} \ding{73} \ding{73} \ding{73} & \cref{sol police4}      \\
 		Spiedini di frutta {(\protect{\texttt{\href{https://training.olinfo.it/task/oii_spiedini}{spiedini}}})}      & dp                     & \ding{72} \ding{72} \ding{73} \ding{73} \ding{73} & \cref{sol spiedini}     \\
 		K-step ancestor {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_treeancestor}{treeancestor}}})} & dp, graph              & \ding{72} \ding{72} \ding{73} \ding{73} \ding{73} & \cref{sol treeancestor} \\
 		Taglialegna {(\protect{\texttt{\href{https://training.olinfo.it/task/oii_taglialegna}{taglialegna}}})}       & dp, amortized analysis & \ding{72} \ding{72} \ding{72} \ding{72} \ding{72} & \cref{sol taglialegna}  \\
+		Ma chi è quel mona {(\protect{\texttt{\href{https://training.olinfo.it/task/roiti_porte}{porte}}})}          & dp                     & \ding{72} \ding{72} \ding{73} \ding{73} \ding{73} & \cref{sol porte}        \\
 		\bottomrule
 	\end{tabular}
 \end{center}
@@ -2133,5 +2342,76 @@ Complessivamente, abbiamo che
 	\end{tabular}
 \end{center}
 Complessità totale: $ O\left(n\right) $
+
+\subsection{Ma chi è quel mona {(\protect{\texttt{\href{https://training.olinfo.it/task/roiti_porte}{porte}}})}}
+\label{sol porte}
+\begin{center}
+	\begin{tabularx}{\textwidth}{X r}
+		\toprule
+		Problema sito OII  & \url{https://training.olinfo.it/task/roiti_porte}                 \\
+		Soluzione proposta & \ttfamily\href{run:./files/esercizi/porte/}{files/esercizi/porte} \\
+		\bottomrule
+	\end{tabularx}
+\end{center}
+L'idea chiave qui sta in un'assunzione implicita del testo del problema:
+\begin{center}
+	"Gaetano inizia sbattendo la porta 0 e \textit{deve terminare sbattendo l'ultima, la $ N-1 $"}
+\end{center}
+quindi ci viene detto che per forza l'ultima porta della sequenza verrà sbattuta.
+\vskip3mm
+Possiamo procedere definendo la struttura \verb|dp|: \verb|dp[i]| conterrà il numero di sequenze armoniche distinte possibili utilizzando le prime \verb|i| porte
+\vskip3mm
+Ora sappiamo che se sbattiamo la porta $ i $-esima, allora possiamo sbattere le porte $ i - 1 $, $ i-2 $, $ i-4 $, $ i-8 $ e così via, più in generale tutte le porte $ i-2^{j} $. Dobbiamo quindi considerare ciascuna delle seguenti opzioni e sommare il numero di combinazioni possibili. Per ciascuna di queste combinazioni, tuttavia, abbiamo già salvato il numero di sequenze armoniche possibile nel vettore $ dp\left[i-2^{j}\right] $. E' necessario tuttavia considerare che il numero di sequenze armoniche va incrementato solo se vale la condizione specificata nel testo del problema, ossia che \textit{la somma delle loro frequenze deve essere divisibile per la loro distanza}, formalmente:
+\begin{center}
+	Incremento $ \Leftrightarrow  (A[i] + A[i - 2^{j}]) \mod 2^j == 0$
+\end{center}
+Il caso base è dato da \verb|dp[0] = 1|, in quanto c'è una sola sequenza armonica possibile con una sola porta
+
+
+\begin{algoritmo}{Porte}
+	\begin{algorithm}[H]
+
+		\SetKwFunction{FCalcoloDP}{compute\_sequences}
+		\Fn{\Int \FCalcoloDP{$N, A$}}{
+			dp $\leftarrow$ \New \Int $[0 \ldots N-1] = \left[0,\ldots ,0\right]$ \Comment*[r]{dp[i]=0}
+			dp[0] $\leftarrow$ 1\;
+
+			\ForEach{i \emph{in} $ 0 \ldots N-1 $}{
+				\ForEach{j \emph{such that} $ i - 2^{j} \ge 0 $}{
+					\If{$(A[i] + A[i - 2^{j}]) \bmod 2^{j} = 0$}{
+						$dp[i] \leftarrow dp[i] + dp[i - 2^{j}]$\;
+					}
+				}
+			}
+			\Return{$ dp\left[N-1\right] \bmod \operatorname{MOD} $}
+		}
+	\end{algorithm}
+\end{algoritmo}
+Detto questo, è possibile implementare l'algoritmo con qualche accortezza riguardante i moduli, applicandolo ogni volta che incrementiamo \verb|dp[i]|, e salvandoci la potenza di 2 di volta in volta, evidanto di doverla ricalcolare ad ogni iterazione:
+
+\begin{algoritmo}{Porte 2}
+	\begin{algorithm}[H]
+
+		\SetKwFunction{FCalcoloDP}{compute\_sequences\_2}
+		\Fn{\Int \FCalcoloDP{$N, A$}}{
+			dp $\leftarrow$ \New \Int $[0 \ldots N-1] = \left[0,\ldots ,0\right]$ \Comment*[r]{dp[i]=0}
+			$dp[0] \leftarrow 1$\;
+			\For{$i \leftarrow 1$ \KwTo $N-1$}{
+				$pow \leftarrow$ 1\;
+				\While{$pow \leq i$}{
+					\If{$(A[i] + A[i - pow]) \bmod pow = 0$}{
+						$dp[i] \leftarrow dp[i] + dp[i - pow]$\;
+						$dp[i] \leftarrow dp[i] \bmod MOD$\;
+					}
+					pow $\leftarrow pow \cdot  2 $\;
+				}
+			}
+			\Return{$ dp\left[N-1\right] \bmod \operatorname{MOD} $}
+		}
+	\end{algorithm}
+\end{algoritmo}
+Ad ogni iterazione del ciclo esterno, il ciclo interno viene eseguito al più $ O\left(\log N\right) $ volte.
+\vskip3mm
+Complessità totale: $ O\left(N \log N\right) $
 
 \end{document}
