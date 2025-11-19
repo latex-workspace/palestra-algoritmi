@@ -101,7 +101,7 @@ void other() {
 }
 
 int main(int argc, char *argv[]) {
-  // basic();
+  basic();
   // structs();
   // iterators();
   // matrix();

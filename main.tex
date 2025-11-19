@@ -1621,6 +1621,314 @@ L'idea è molto simile al problema \hyperref[uniquepaths]{Unique paths}, con l'u
 	\end{bmatrix}
 \end{gather*}
 
+\section{Feature importanti di cpp}
+Di seguito vediamo una scarrellata di feature un filo più avanzate di c++ e della standard library che possono tornare molto utili in programmazione competitiva.
+\subsection{Type inference - auto}\label{type inference}
+Spesso con l'aumentare della complessità delle strutture dati, il tipo di una variabile può diventare molto lungo e difficile da scrivere. Per ovviare a questo problema, C++ fornisce la keyword \texttt{auto}, che permette al compilatore di dedurre automaticamente il tipo della variabile in fase di compilazione. Ad esempio, per inizializzare un iteratore, anzichè scrivere:
+\begin{center}
+	\ttfamily
+	std::vector<int>::iterator it = vec.begin();
+\end{center}
+possiamo scrivere:
+\begin{center}
+	\ttfamily
+	auto it = vec.begin();
+\end{center}
+Questo meccanisco si chiama \textit{type inference}. Di fatto affidiamo al compilatore il compito di dedurre il tipo della variabile in base al contesto
+
+\subsection{Passaggio per riferimento}\label{pass by ref}
+Solitamente in C++ le variabili vengono passate per valore, ossia viene creata una copia della variabile originale. In alcuni casi, però, può essere utile passare la variabile per riferimento. Questo meccanismo è molto simile all'uso di un puntatore. Questo può essere desiderabile per due motivi principali:
+\begin{itemize}
+	\item Per far si che eventuali modifiche alla variabile all'interno della funzione si riflettono anche sulla variabile originale
+	\item Per evitare il costo computazionale di copiare variabili di grandi dimensione
+\end{itemize}
+Per fare ciò, basta aggiungere il simbolo \texttt{\&} al tipo della variabile nel prototipo della funzione. Ad esempio:
+\begin{lstlisting}[language = cpp, frame = none]
+void by_ref(int& x){
+  x += 10; // Modifica la variabile originale
+  }
+void by_val(int x){
+  x += 10; // Modifica solo la copia locale nella funzione
+  }
+\end{lstlisting}
+Tendenzialmente, questo viene particolarmente utile per passare strutture dati quali \verb|vector|, i quali possono essere molto grandi:
+\begin{lstlisting}[language = cpp, frame = none]
+  void by_ref(std::vector<int>& vec){ } // Veloce
+  void by_val(std::vector<int> vec) { } // Lento
+\end{lstlisting}
+
+
+\subsection{Range-based for (for-each loop)}
+Possiamo utilizzare dello zucchero sintattico per iterare su collezioni come array e vettori. Invece di scrivere:
+\begin{lstlisting}[language = cpp, frame = none]
+for (int i = 0; i < vec.size(); ++i) {
+  process(vec[i]);
+}
+\end{lstlisting}
+possiamo scrivere:
+\begin{lstlisting}[language = cpp, frame = none]
+for (auto &element : vec) {
+  process(element);
+}
+\end{lstlisting}
+Nota come qui si faccia uso del passaggio per riferimento (\cref{pass by ref}) e dell'inferenza di tipo (\cref{type inference})
+
+\subsection{Overloading degli operatori}
+In C++, è possibile sovraccaricare gli operatori per definire comportamenti personalizzati per le classi (o struct) definite dall'utente. Questo permette di utilizzare operatori standard (come +, -, \*, ecc.) con oggetti delle proprie classi in modo intuitivo. Fra questi, quelli che a noi tornano più utili sono:
+
+\subsubsection{Opzioni per eseguire l'overloading}
+Saper eseguire l'overloading dell'operatore di confronto minore (\texttt{<}) è particolarmente utile quando si lavora con strutture dati che richiedono un ordinamento, come \texttt{std::set} (\cref{set}) o \texttt{std::priority\_queue} (\cref{priority queue}). Definendo questo operatore, possiamo specificare come gli oggetti della nostra classe devono essere confrontati tra loro.
+\vskip3mm
+Supponendo di avere la seguente struct:
+\begin{lstlisting}[language = cpp, frame = none]
+struct Point {
+  int x, y;
+  Point(int x, int y) : x(x), y(y) {  }
+};
+  
+\end{lstlisting}
+Abbiamo 2 modi per eseguire l'overloading dell'operatore
+\vskip3mm
+\sfblue{Metodo 1:} Definire l'operatore all'interno della classe
+\begin{lstlisting}[language = cpp, frame = none]
+struct Point {
+    // Contenuto della struct
+		bool operator<(const Point& other) const {
+				return x < other.x;
+			}
+	};
+\end{lstlisting}
+\sfblue{Metodo 2:} Definire l’operatore come funzione esterna
+\begin{lstlisting}[language = cpp, frame = none]
+// Funzione esterna alla struct Point
+bool operator<(const Point& a, const Point& b) {
+   return a.x < b.x;
+}
+\end{lstlisting}
+\subsubsection{Funzioni da saper "overloadare"}
+Le funzioni più comuni che possono essere utili da overloadare sono:
+\begin{itemize}
+	\item Operatore minore (\texttt{<}): Utile per poter inserire oggetti in strutture che richiedano un ordinamento interno, come as esempio (\cref{set}) o \texttt{std::priority\_queue} (\cref{priority queue})
+	      \begin{lstlisting}[language = cpp, frame = none]
+// All'interno della struct
+bool operator<(const Point& other) const {}
+// Oppure come funzione esterna
+bool operator<(const Point& a, const Point& b) {}
+    \end{lstlisting}
+	      La funzione deve restituire \texttt{true} se l'oggetto corrente/a sinistra è minore di \texttt{other} (o \texttt{b} nella versione esterna)
+	\item Operatore di output (\texttt{<<}): Permette di stampare oggetti personalizzati tramite flussi di output come \texttt{std::cout}
+	      \begin{lstlisting}[language = cpp, frame = none]
+// Come funzione esterna
+std::ostream& operator<<(std::ostream& os, const Point& p) {
+    return os << "(" << p.x << ", " << p.y << ")";
+}
+      \end{lstlisting}
+	      La funzione deve restituire un riferimento a \texttt{std::ostream} e permette di utilizzare \texttt{cout << punto;}
+\end{itemize}
+
+\subsection{Structs}
+Talvolta risulta utile immagazzinare i dati in una struct o classe. In programmazione competitiva non è mai rischiesto l'utilizzo di funzioni avanzate, ma è bene sapere almeno la sintassi di base. Definiamo ad esempio una struttura \verb|Point|:
+\begin{lstlisting}[language = cpp, frame = none]
+  struct Point {
+    int x;
+    int y;
+    // Costruttore "standard"
+    Point (int x, int y) {
+      this->x = x;
+      this->y = y;
+    }
+    // Costruttore con initializer list
+    Point(int x, int y) : x(x), y(y) {} 
+  };
+\end{lstlisting}
+Una feature specifica di cpp è l'initializer list, che fornisce una strategia efficace per inizializzare i campi di una struttura o classe. Invece di assegnare i valori ai membri all'interno del corpo del costruttore, possiamo utilizzare l'initializer list per inizializzare i membri direttamente al momento della creazione dell'oggetto. Questo può essere più efficiente, specialmente per tipi di dati complessi o costosi da copiare.
+
+\subsection{Inizializzatori di liste}
+In cpp si possono inizializzare liste e vettori in maniera efficace usando le graffe \{\}. Ad esempio:
+\begin{lstlisting}[language = cpp, frame = none]
+// Inizializza un array di interi
+int arr[] = {1, 2, 3, 4, 5}; 
+
+// Inizializza un vettore di interi
+vector<int> vec = {10, 20, 30}; 
+
+// Inizializza una matrice 3x3
+vector<vector<int>> matrix = {
+  {1, 2, 3},
+  {4, 5, 6},
+  {7, 8, 9}
+}; 
+\end{lstlisting}
+Una sintassi molto simile può essere usata per inizializzare le struct:
+\begin{lstlisting}[language = cpp, frame = none]
+struct Point {
+  int x;
+  int y;
+};
+
+point p = {10, 20};        // Inizializza un oggetto Point con x=10 e y=20
+point q = {.x=30, .y=40};  // Equivalente a quella sopra
+\end{lstlisting}
+Alcuni esempio più complessi possono essere:
+\begin{lstlisting}[language = cpp, frame = none]
+  vector<Point> points = { {1, 2}, {3, 4}, {5, 6} };
+  unordered_map<int, Point> pointMap = {
+    {1, {10, 20}},
+    {2, {30, 40}}
+  };
+\end{lstlisting}
+
+\section{Funzioni utili della std library}
+La standard library di C++ offre una vasta gamma di funzioni e algoritmi che possono semplificare notevolmente il codice e migliorare le prestazioni. Di seguito sono elencate alcune delle funzioni più utili e comuni che possono essere impiegate in programmazione competitiva.
+
+\subsection{Sorting - {\protect\ttfamily\href{https://cplusplus.com/reference/algorithm/sort/}{std::sort}}}
+Indubbiamente, fra le funzioni più comuni e utili della standard library di C++ c'è la funzione \texttt{std::sort}, che permette di ordinare array e vettori in maniera molto efficiente. La funzione utilizza l'algoritmo di ordinamento Introsort, che combina Quicksort, Heapsort e Insertion Sort per garantire prestazioni ottimali nella maggior parte dei casi ($ O\left(n \log n\right) $).
+\begin{center}
+	\ttfamily
+	std::sort(\color{mutedblue}{begin\_iterator}, \color{mutedblue}{end\_iterator});
+\end{center}
+ad esempio, per ordinare un vettore di interi:
+\begin{lstlisting}[language = cpp, frame = none]
+// Con vector
+std::vector<int> vec = {4, 2, 5, 1, 3};
+std::sort(vec.begin(), vec.end());
+
+// Con array
+int v[] = {4, 2, 5, 1, 3};
+std::sort(v, v + 5); // v + 5 punta alla fine dell'array
+\end{lstlisting}
+inoltre, è possibile specificare un criterio di ordinamento personalizzato passando un \textit{functor}. In particolare possiamo specificare \texttt{std::less<\color{mutedblue}{type}>()} per ordinare in ordine crescente e \texttt{std::greater<\color{mutedblue}{type}>()} per ordinare in ordine decrescente:
+
+\begin{lstlisting}[language = cpp, frame = none]
+std::vector<int> vec = {4, 2, 5, 1, 3};
+
+// Ordina in ordine crescente, default
+std::sort(vec.begin(), vec.end(), std::less<int>());    
+// Ordina in ordine decrescente
+std::sort(vec.begin(), vec.end(), std::greater<int>()); 
+\end{lstlisting}
+
+\subsection{Pitov - {\protect\ttfamily\href{https://cplusplus.com/reference/algorithm/nth_element/}{std::nth\_element}}}
+La funzione \texttt{std::nth\_element} riordina parzialmente un intervallo: dopo la chiamata, l’elemento in posizione \texttt{nth} conterrà il valore che avrebbe dopo un ordinamento completo, tutti gli elementi prima saranno minori o uguali e quelli dopo maggiori o uguali (ma la partizione non è ordinata). Tempo atteso $O(n)$.
+\begin{center}
+	\ttfamily
+	std::nth\_element(\color{mutedblue}{begin}, \color{mutedblue}{nth}, \color{mutedblue}{end});
+\end{center}
+\begin{lstlisting}[language=cpp, frame=none]
+std::vector<int> v = {4, 2, 8, 1, 5};
+std::nth_element(v.begin(), v.begin() + 2, v.end());
+// v[2] ora contiene il terzo elemento più piccolo
+\end{lstlisting}
+
+\subsection{Binary search 1 - {\protect\ttfamily\href{https://cplusplus.com/reference/algorithm/lower_bound/}{std::lower\_bound}}, {\protect\ttfamily\href{https://cplusplus.com/reference/algorithm/upper_bound/}{std::upper\_bound}}}
+\texttt{std::lower\_bound} restituisce l’iteratore al primo elemento \(\geq\) di un valore; \texttt{std::upper\_bound} restituisce l’iteratore al primo elemento \(>\) di un valore. Entrambe richiedono che l'intervallo sia ordinato e lavorano in $O(\log n)$.
+\begin{center}
+	\ttfamily
+	std::lower\_bound(\color{mutedblue}{begin}, \color{mutedblue}{end}, \color{mutedblue}{val});
+\end{center}
+\begin{center}
+	\ttfamily
+	std::upper\_bound(\color{mutedblue}{begin}, \color{mutedblue}{end}, \color{mutedblue}{val});
+\end{center}
+\begin{lstlisting}[language=cpp, frame=none]
+std::vector<int> v = {1, 2, 3, 5, 5, 8};
+// Primo >= 5
+auto it1 = std::lower_bound(v.begin(), v.end(), 5); // punta a v[3]
+// Primo > 5
+auto it2 = std::upper_bound(v.begin(), v.end(), 5); // punta a v[5]
+\end{lstlisting}
+
+\subsection{Binary search 2 - {\protect\ttfamily\href{https://cplusplus.com/reference/algorithm/binary_search/}{std::binary\_search}}}
+Controlla se un elemento è presente in un intervallo ordinato usando ricerca binaria, ritorna \texttt{true} o \texttt{false}. Complessità $O(\log n)$.
+\begin{center}
+	\ttfamily
+	std::binary\_search(\color{mutedblue}{begin}, \color{mutedblue}{end}, \color{mutedblue}{val});
+\end{center}
+\begin{lstlisting}[language=cpp, frame=none]
+std::vector<int> v = {1, 2, 3, 5, 8};
+if (std::binary_search(v.begin(), v.end(), 3)) {
+    // 3 è presente
+}
+\end{lstlisting}
+
+\subsection{Range elementi uguali - {\protect\ttfamily\href{https://cplusplus.com/reference/algorithm/equal_range/}{std::equal\_range}}}
+Restituisce una coppia di iteratori: primo elemento \(\geq val\), primo \(> val\); utile per trovare il range di un certo valore in uno spazio ordinato.
+\begin{center}
+	\ttfamily
+	auto range = std::equal\_range(\color{mutedblue}{begin}, \color{mutedblue}{end}, \color{mutedblue}{val});
+\end{center}
+\begin{lstlisting}[language=cpp, frame=none]
+std::vector<int> v = {1, 2, 5, 5, 5, 8};
+auto range = std::equal_range(v.begin(), v.end(), 5);
+// range.first punta a v[2], range.second a v[5]
+\end{lstlisting}
+
+\subsection{Minimo e massimo in vettori - {\protect\ttfamily\href{https://cplusplus.com/reference/algorithm/min_element/}{std::min\_element}}, {\protect\ttfamily\href{https://cplusplus.com/reference/algorithm/max_element/}{std::max\_element}}}
+Trovano l’iteratore all’elemento minimo o massimo in un intervallo.
+\begin{center}
+	\ttfamily
+	std::min\_element(\color{mutedblue}{begin}, \color{mutedblue}{end});
+\end{center}
+\begin{center}
+	\ttfamily
+	std::max\_element(\color{mutedblue}{begin}, \color{mutedblue}{end});
+\end{center}
+\begin{lstlisting}[language=cpp, frame=none]
+std::vector<int> v = {4, 7, 2, 9, 1};
+auto it_min = std::min_element(v.begin(), v.end()); // v[4] = 1
+auto it_max = std::max_element(v.begin(), v.end()); // v[3] = 9
+\end{lstlisting}
+
+\subsection{Somma e moltiplica - {\protect\ttfamily\href{https://cplusplus.com/reference/numeric/accumulate/}{std::accumulate}}}
+La funzione \texttt{std::accumulate} calcola la somma (o un’operazione generica) degli elementi nell’intervallo. Necessita di \texttt{\#include <numeric>}.
+\begin{center}
+	\ttfamily
+	std::accumulate(\color{mutedblue}{begin}, \color{mutedblue}{end}, \color{mutedblue}{init});
+\end{center}
+\begin{lstlisting}[language=cpp, frame=none]
+std::vector<int> v = {1, 2, 3, 4};
+int somma = std::accumulate(v.begin(), v.end(), 0); // somma = 10
+
+// anche con operazione generica (ad esempio moltiplicazione)
+int prodotto = std::accumulate(v.begin(), v.end(), 1, std::multiplies<int>());
+\end{lstlisting}
+
+\subsection{Minimo e massimo - {\protect\ttfamily\href{https://cplusplus.com/reference/algorithm/minmax_element/}{std::minmax\_element}}}
+Restituisce una coppia di iteratori: primo al minimo, secondo al massimo. Unico ciclo su tutto l’intervallo.
+\begin{center}
+	\ttfamily
+	auto [it\_min, it\_max] = std::minmax\_element(\color{mutedblue}{begin}, \color{mutedblue}{end});
+\end{center}
+\begin{lstlisting}[language=cpp, frame=none]
+std::vector<int> v = {4, 7, 2, 9, 1};
+auto res = std::minmax_element(v.begin(), v.end()); // res.first verso il minimo, res.second verso il massimo
+\end{lstlisting}
+
+\subsection{Conta elementi - {\protect\ttfamily\href{https://cplusplus.com/reference/algorithm/count/}{std::count}}}
+Conta quante volte un dato valore appare nell'intervallo.
+\begin{center}
+	\ttfamily
+	std::count(\color{mutedblue}{begin}, \color{mutedblue}{end}, \color{mutedblue}{val});
+\end{center}
+\begin{lstlisting}[language=cpp, frame=none]
+std::vector<int> v = {1, 5, 2, 5, 5, 8};
+int howMany = std::count(v.begin(), v.end(), 5); // howMany = 3
+\end{lstlisting}
+
+\subsection{Trova elementi - {\protect\ttfamily\href{https://cplusplus.com/reference/algorithm/find/}{std::find}}}
+Restituisce un iteratore al primo elemento uguale a quello cercato, oppure \texttt{end} se non trovato.
+\begin{center}
+	\ttfamily
+	std::find(\color{mutedblue}{begin}, \color{mutedblue}{end}, \color{mutedblue}{val});
+\end{center}
+\begin{lstlisting}[language=cpp, frame=none]
+std::vector<int> v = {1, 3, 4, 6};
+auto it = std::find(v.begin(), v.end(), 4); // it punta a v[2]
+if (it == v.end()) {
+    // valore non trovato
+}
+\end{lstlisting}
+
 \section{Strutture dati di cpp}
 Nella standard library di C++ sono presenti diverse strutture dati che possono essere utili per implementare algoritmi di programmazione dinamica. Di seguito una breve panoramica delle più comuni.
 
@@ -1743,7 +2051,7 @@ La \texttt{priority\_queue} è una coda con priorità implementata solitamente t
 \end{center}
 Questa struttura dati, a differenza di vettori, stack, queue e altre ha bisogno che il tipo di elemento contenuto implementi l'operatore \verb|<| (dal punto di vista logico risulta impossibile creare questa struttura dati se non esiste un criterio secondo il quale possiamo ordinare gli elementi)
 
-\subsection{Set}
+\subsection{Set}\label{set}
 Il \texttt{set} è una struttura che contiene elementi unici, ordinati secondo un comparatore (\verb|std::less<>| di default). Utile quando abbiamo bisogno di tenere una collezione di dati che risulta ordinata ad ogni momento. Internamente è implementato come un albero bilanciato Red-Black, che garantisce prestazioni logaritmiche.
 
 \vskip3mm
