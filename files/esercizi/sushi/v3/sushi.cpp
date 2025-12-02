@@ -118,7 +118,7 @@ int sushi(int N, int B, vector<int> A) {
 
 #ifdef DEBUG
 int main(int argc, char *argv[]) {
-  std::ifstream in("input1.txt");
+  std::ifstream in("input0.txt");
 
   int N, B;
   in >> N >> B;
