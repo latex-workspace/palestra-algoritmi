@@ -7,27 +7,16 @@
 
 using namespace std;
 
-struct NullStream : public std::ostream {
-  NullStream() : std::ostream(nullptr) {}
-};
-
-#ifdef DEBUG
-#define DBG std::cout
-#else
-static NullStream dbg_null_stream;
-#define DBG dbg_null_stream
-#endif
-
-using namespace std;
-
 constexpr int MAXB = 100'100;
 
+#ifdef DEBUG
 string bitset_str(bitset<MAXB> &bs, int n) {
   string s = "";
   for (int i = n - 1; i >= 0; i--)
     s += to_string(bs.test(i)) + " ";
   return s;
 }
+#endif
 
 int sushi(int N, int B, vector<int> A) {
   bitset<MAXB> S1, S2;
@@ -38,7 +27,9 @@ int sushi(int N, int B, vector<int> A) {
     S2 = S1;
     for (int a : A) {
       S2 |= S2 << (a * R);
-      DBG << "[" << a * R << "]\t:\t" << bitset_str(S2, B + 1) << endl;
+#ifdef DEBUG
+      std::cout << "[" << a * R << "]\t:\t" << bitset_str(S2, B + 1) << endl;
+#endif
     }
     if (S2.test(B))
       break;
@@ -49,12 +40,16 @@ int sushi(int N, int B, vector<int> A) {
       return -1;
   }
 
-  DBG << "Latest" << bitset_str(S1, B + 1) << endl;
+#ifdef DEBUG
+  std::cout << "Latest" << bitset_str(S1, B + 1) << endl;
+#endif
   for (int t = R / 2; t > 0; t /= 2) {
     S2 = S1;
     for (int a : A) {
       S2 |= S2 << (a * t);
-      DBG << "[" << a * t << "]\t:\t" << bitset_str(S2, B + 1) << endl;
+#ifdef DEBUG
+      std::cout << "[" << a * t << "]\t:\t" << bitset_str(S2, B + 1) << endl;
+#endif
     }
     if (!S2.test(B)) {
       R |= t;

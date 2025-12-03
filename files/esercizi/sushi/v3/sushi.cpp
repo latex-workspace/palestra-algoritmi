@@ -5,27 +5,18 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-#define DEBUG
+// #define DEBUG
 
 using namespace std;
 
-struct NullStream : public std::ostream {
-  NullStream() : std::ostream(nullptr) {}
-};
-
 #ifdef DEBUG
-#define DBG std::cout
-#else
-static NullStream dbg_null_stream;
-#define DBG dbg_null_stream
-#endif
-
 string to_str(bool *v, int n) {
   string s = "";
   for (int i = 0; i < n; i++)
     s += to_string(v[i]) + " ";
   return s;
 }
+#endif
 
 int sushi(int N, int B, vector<int> A) {
 
@@ -44,13 +35,14 @@ int sushi(int N, int B, vector<int> A) {
   curr_dp[0] = 1;
   latest[0] = 1;
 
-  DBG << "   \t:\t";
+#ifdef DEBUG
+  std::cout << "   \t:\t";
   for (int k = 0; k <= B; k++)
-    DBG << k << " ";
-  DBG << std::endl;
+    std::cout << k << " ";
+  std::cout << std::endl;
 
-  DBG << "[x]\t:\t" << to_str(prev_dp, B + 1) << std::endl;
-
+  std::cout << "[x]\t:\t" << to_str(prev_dp, B + 1) << std::endl;
+#endif
   int block_size = 1;
 
   while (1) {
@@ -65,8 +57,9 @@ int sushi(int N, int B, vector<int> A) {
       for (int j = 1; j <= B; j++)
         curr_dp[j] = prev_dp[j] || (weight > j ? 0 : prev_dp[j - weight]);
 
-      DBG << "[" << weight << "]\t:\t" << to_str(curr_dp, B + 1) << endl;
-
+#ifdef DEBUG
+      std::cout << "[" << weight << "]\t:\t" << to_str(curr_dp, B + 1) << endl;
+#endif
       std::swap(prev_dp, curr_dp);
     }
 
@@ -83,8 +76,12 @@ int sushi(int N, int B, vector<int> A) {
   int upper_bound = block_size + 1;
 
   while (lower_bound < upper_bound) {
-    DBG << "b_search [" << lower_bound << ", " << upper_bound << ")" << endl;
-    DBG << "Latest\t:\t" << to_str(latest, B + 1) << endl;
+
+#ifdef DEBUG
+    std::cout << "b_search [" << lower_bound << ", " << upper_bound << ")"
+              << endl;
+    std::cout << "Latest\t:\t" << to_str(latest, B + 1) << endl;
+#endif
     memcpy(prev_dp, latest, (B + 1) * sizeof(bool));
 
     int mid = (lower_bound + upper_bound) / 2;
@@ -96,23 +93,20 @@ int sushi(int N, int B, vector<int> A) {
       for (int j = 1; j <= B; j++)
         curr_dp[j] = prev_dp[j] || (weight > j ? 0 : prev_dp[j - weight]);
 
-      DBG << "[" << mid * A[i] << "]\t:\t" << to_str(curr_dp, B + 1) << endl;
+#ifdef DEBUG
+      std::cout << "[" << mid * A[i] << "]\t:\t" << to_str(curr_dp, B + 1)
+                << endl;
+#endif
 
       std::swap(prev_dp, curr_dp);
     }
-
     if (prev_dp[B]) {
       upper_bound = mid;
     } else {
       lower_bound = mid + 1;
-      // memcpy(latest, prev_dp, (B + 1) * sizeof(bool));
     }
-
-    // restore latest
-    // memcpy(prev_dp, latest, (B + 1) * sizeof(bool));
   }
 
-  DBG << "Upper bound: " << upper_bound << std::endl;
   return block_size - 1 + lower_bound;
 }
 
@@ -130,6 +124,6 @@ int main(int argc, char *argv[]) {
   }
 
   int rv = sushi(N, B, A);
-  DBG << rv << std::endl;
+  std::cout << rv << std::endl;
 }
 #endif

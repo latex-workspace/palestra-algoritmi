@@ -4,25 +4,16 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-#define DEBUG
+// #define DEBUG
 
 using namespace std;
 
-struct NullStream : public std::ostream {
-  NullStream() : std::ostream(nullptr) {}
-};
-
 #ifdef DEBUG
-#define DBG std::cout
-#else
-static NullStream dbg_null_stream;
-#define DBG dbg_null_stream
-#endif
-
 void print_v(int v[], int n) {
   for (int i = 0; i < n; i++)
-    DBG << i << "\t->\t" << v[i] << "\n";
+    std::cout << i << "\t->\t" << v[i] << "\n";
 }
+#endif
 
 int sushi(int N, int B, vector<int> A) {
 
@@ -37,10 +28,12 @@ int sushi(int N, int B, vector<int> A) {
   prev_dp[0] = 1;
   curr_dp[0] = 1;
 
-  DBG << "[x] : ";
+#ifdef DEBUG
+  std::cout << "[x] : ";
   for (int k = 0; k <= B; k++)
-    DBG << prev_dp[k] << " ";
-  DBG << std::endl;
+    std::cout << prev_dp[k] << " ";
+  std::cout << std::endl;
+#endif
 
   int R = 1;
 
@@ -51,10 +44,12 @@ int sushi(int N, int B, vector<int> A) {
       for (int j = 1; j <= B; j++)
         curr_dp[j] = prev_dp[j] || (A[i] > j ? 0 : prev_dp[j - A[i]]);
 
-      DBG << "[" << A[i] << "] : ";
+#ifdef DEBUG
+      std::cout << "[" << A[i] << "] : ";
       for (int k = 0; k <= B; k++)
-        DBG << curr_dp[k] << " ";
-      DBG << std::endl;
+        std::cout << curr_dp[k] << " ";
+      std::cout << std::endl;
+#endif
 
       std::swap(prev_dp, curr_dp);
     }
@@ -84,6 +79,6 @@ int main(int argc, char *argv[]) {
   }
 
   int rv = sushi(N, B, A);
-  DBG << rv << std::endl;
+  std::cout << rv << std::endl;
 }
 #endif

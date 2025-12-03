@@ -3,27 +3,16 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-#define DEBUG
+// #define DEBUG
 
 using namespace std;
 
-struct NullStream : public std::ostream {
-  NullStream() : std::ostream(nullptr) {}
-};
-
 #ifdef DEBUG
-#define DBG std::cout
-#else
-static NullStream dbg_null_stream;
-#define DBG dbg_null_stream
-#endif
-
 void print_v(int v[], int n) {
-#ifdef DEBUG
   for (int i = 0; i < n; i++)
     std::cout << i << "\t->\t" << v[i] << "\n";
-#endif
 }
+#endif
 
 int sushi(int N, int B, vector<int> A) {
 
@@ -42,7 +31,9 @@ int sushi(int N, int B, vector<int> A) {
   // For each type of sushi
   for (int i = 0; i < N; i++) {
 
-    DBG << "Iterazione " << i << std::endl;
+#ifdef DEBUG
+    std::cout << "Iterazione " << i << std::endl;
+#endif
     // I can take any number without exceeding the budget
     for (int j = 0; j <= B; j++)
       curr_sk[j] = -1;
@@ -64,9 +55,11 @@ int sushi(int N, int B, vector<int> A) {
       }
     }
 
-    DBG << "CURR SK PRE MERGE" << std::endl;
+#ifdef DEBUG
+    std::cout << "CURR SK PRE MERGE" << std::endl;
     print_v(curr_sk, B + 1);
-    DBG << "------------------" << std::endl;
+    std::cout << "------------------" << std::endl;
+#endif
 
     for (int k = 0; k <= B; k++) {
       int merged = min(curr_sk[k], prev_sk[k]);
@@ -74,9 +67,11 @@ int sushi(int N, int B, vector<int> A) {
       curr_sk[k] = merged;
     }
 
-    DBG << "CURR SK POST MERGE" << std::endl;
+#ifdef DEBUG
+    std::cout << "CURR SK POST MERGE" << std::endl;
     print_v(curr_sk, B + 1);
-    DBG << "------------------" << std::endl;
+    std::cout << "------------------" << std::endl;
+#endif
 
     std::swap(prev_sk, curr_sk);
   }
@@ -98,6 +93,6 @@ int main(int argc, char *argv[]) {
   }
 
   int rv = sushi(N, B, A);
-  DBG << rv << std::endl;
+  std::cout << rv << std::endl;
 }
 #endif
