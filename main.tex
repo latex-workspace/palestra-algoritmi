@@ -6,6 +6,17 @@
 \usepackage{makecell}
 \usepackage{contour}
 % \usepackage{amssymb}        % gives \bigstar
+\definecolor{score1}{rgb}{0.70, 0.30, 0.30} % muted red
+\definecolor{score2}{rgb}{0.75, 0.40, 0.30}
+\definecolor{score3}{rgb}{0.80, 0.50, 0.30}
+\definecolor{score4}{rgb}{0.85, 0.60, 0.30}
+\definecolor{score5}{rgb}{0.90, 0.70, 0.30} % warm muted orange
+\definecolor{score6}{rgb}{0.90, 0.75, 0.30}
+\definecolor{score7}{rgb}{0.85, 0.80, 0.35}
+\definecolor{score8}{rgb}{0.75, 0.80, 0.40}
+\definecolor{score9}{rgb}{0.60, 0.75, 0.40}
+\definecolor{score10}{rgb}{0.45, 0.70, 0.40} % muted green
+
 \title{Pelstra di algoritmi}
 \author{Marini Mattia}
 \date{20 ottobre 2025}
@@ -2144,17 +2155,18 @@ Di seguito una raccolta di problemi provenienti dal sito degli allenamenti della
 \begin{center}
 	\begin{tabular}{l l l l}
 		\toprule
-		Problema                                                                                                     & Tecniche               & Difficoltà                                        & Soluzione               \\
+		Problema                                                                                                     & Tecniche                & Difficoltà                                        & Soluzione               \\
 		\midrule
-		Figonacci {(\texttt{\href{https://training.olinfo.it/task/ois_figonacci}{figonacci}})}                       & dp                     & \ding{72} \ding{73} \ding{73} \ding{73} \ding{73} & \cref{sol figonacci}    \\
-		Discesa massima {(\protect{\texttt{\href{https://training.olinfo.it/task/discesa}{discesa}}})}               & dp                     & \ding{72} \ding{73} \ding{73} \ding{73} \ding{73} & \cref{sol discesa}      \\
-		Police 3 {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_police3}{\ttfamily police3}}})}        & dp                     & \ding{72} \ding{73} \ding{73} \ding{73} \ding{73} & \cref{sol police3}      \\
-		Piano degli studi {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_pianostudi}{pianostudi}}})}   & dp, binary search      & \ding{72} \ding{72} \ding{72} \ding{73} \ding{73} & \cref{sol pianostudi}   \\
-		Police 4 {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_police4}{\ttfamily police4}}})}        & dp                     & \ding{72} \ding{72} \ding{73} \ding{73} \ding{73} & \cref{sol police4}      \\
-		Spiedini di frutta {(\protect{\texttt{\href{https://training.olinfo.it/task/oii_spiedini}{spiedini}}})}      & dp                     & \ding{72} \ding{72} \ding{73} \ding{73} \ding{73} & \cref{sol spiedini}     \\
-		K-step ancestor {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_treeancestor}{treeancestor}}})} & dp, graph              & \ding{72} \ding{72} \ding{73} \ding{73} \ding{73} & \cref{sol treeancestor} \\
-		Taglialegna {(\protect{\texttt{\href{https://training.olinfo.it/task/oii_taglialegna}{taglialegna}}})}       & dp, amortized analysis & \ding{72} \ding{72} \ding{72} \ding{72} \ding{72} & \cref{sol taglialegna}  \\
-		Ma chi è quel mona {(\protect{\texttt{\href{https://training.olinfo.it/task/roiti_porte}{porte}}})}          & dp                     & \ding{72} \ding{72} \ding{73} \ding{73} \ding{73} & \cref{sol porte}        \\
+		Figonacci {(\texttt{\href{https://training.olinfo.it/task/ois_figonacci}{figonacci}})}                       & dp                      & \ding{72} \ding{73} \ding{73} \ding{73} \ding{73} & \cref{sol figonacci}    \\
+		Discesa massima {(\protect{\texttt{\href{https://training.olinfo.it/task/discesa}{discesa}}})}               & dp                      & \ding{72} \ding{73} \ding{73} \ding{73} \ding{73} & \cref{sol discesa}      \\
+		Police 3 {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_police3}{\ttfamily police3}}})}        & dp                      & \ding{72} \ding{73} \ding{73} \ding{73} \ding{73} & \cref{sol police3}      \\
+		Piano degli studi {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_pianostudi}{pianostudi}}})}   & dp, binary search       & \ding{72} \ding{72} \ding{72} \ding{73} \ding{73} & \cref{sol pianostudi}   \\
+		Police 4 {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_police4}{\ttfamily police4}}})}        & dp                      & \ding{72} \ding{72} \ding{73} \ding{73} \ding{73} & \cref{sol police4}      \\
+		Spiedini di frutta {(\protect{\texttt{\href{https://training.olinfo.it/task/oii_spiedini}{spiedini}}})}      & dp                      & \ding{72} \ding{72} \ding{73} \ding{73} \ding{73} & \cref{sol spiedini}     \\
+		K-step ancestor {(\protect{\texttt{\href{https://training.olinfo.it/task/ois_treeancestor}{treeancestor}}})} & dp, graph               & \ding{72} \ding{72} \ding{73} \ding{73} \ding{73} & \cref{sol treeancestor} \\
+		Taglialegna {(\protect{\texttt{\href{https://training.olinfo.it/task/oii_taglialegna}{taglialegna}}})}       & dp, amortized analysis  & \ding{72} \ding{72} \ding{72} \ding{72} \ding{72} & \cref{sol taglialegna}  \\
+		Ma chi è quel mona {(\protect{\texttt{\href{https://training.olinfo.it/task/roiti_porte}{porte}}})}          & dp                      & \ding{72} \ding{72} \ding{73} \ding{73} \ding{73} & \cref{sol porte}        \\
+		Truffa al sushi {(\protect{\texttt{\href{https://training.olinfo.it/task/preoii_sushi}{sushi}}})}            & dp, binary search, math & \ding{72} \ding{72} \ding{72} \ding{72} \ding{72} & \cref{sol sushi}        \\
 		\bottomrule
 	\end{tabular}
 \end{center}
@@ -2721,5 +2733,31 @@ Detto questo, è possibile implementare l'algoritmo con qualche accortezza rigua
 Ad ogni iterazione del ciclo esterno, il ciclo interno viene eseguito al più $ O\left(\log N\right) $ volte.
 \vskip3mm
 Complessità totale: $ O\left(N \log N\right) $
+
+\subsection{Truffa al sushi {(\protect{\texttt{\href{https://training.olinfo.it/task/preoii_sushi}{sushi}}})}}
+\label{sol sushi}
+\begin{center}
+	\begin{tabularx}{\textwidth}{X r}
+		\toprule
+		Problema sito OII  & \url{https://training.olinfo.it/task/preoii_sushi}                \\
+		Soluzione proposta & \ttfamily\href{run:./files/esercizi/sushi/}{files/esercizi/sushi} \\
+		\bottomrule
+	\end{tabularx}
+\end{center}
+Il problema è chiaramente di programmazione dinamica e presenta delle soluzioni naiv che tuttavia risultano troppo pesanti dal punti di vista computazionale. Per vedere come possiamo arrivare ad una soluzione efficiente partiamo esplorando le più naive. Nel nostro caso partiremo da una soluzione "ad hoc" piuttosto semplice dal punti di vista intuitivo che comunque porta ad un discreto punteggio ed esploreremo poi diverse ottimizzazioni
+
+\begin{center}
+	\begin{tabularx}{\textwidth}{l l X}
+		\toprule
+		\sfblue{Soluzione}                                                     & \sfblue{Punteggio}           & \sfblue{Descrizione}                            \\
+		\midrule
+		\ttfamily\href{run:./files/esercizi/sushi/v2}{files/esercizi/sushi/v2} & \ttfamily\color{score5} 55   & Knapsack e ricerca lineare                      \\
+		\ttfamily\href{run:./files/esercizi/sushi/v1}{files/esercizi/sushi/v1} & \ttfamily\color{score8}  84  & Soluzione "ad hoc" naive                        \\
+		\ttfamily\href{run:./files/esercizi/sushi/v3}{files/esercizi/sushi/v3} & \ttfamily\color{score9} 94   & Knapsack e ricerca esponenziale/binaria         \\
+		\ttfamily\href{run:./files/esercizi/sushi/v4}{files/esercizi/sushi/v4} & \ttfamily\color{score10} 100 & Knapsack, ricerca esponenziale/binaria e bitset \\
+		\bottomrule
+	\end{tabularx}
+\end{center}
+
 
 \end{document}

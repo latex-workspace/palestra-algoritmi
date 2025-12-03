@@ -24,7 +24,7 @@ constexpr int MAXB = 100'100;
 
 string bitset_str(bitset<MAXB> &bs, int n) {
   string s = "";
-  for (int i = 0; i < n; i++)
+  for (int i = n - 1; i >= 0; i--)
     s += to_string(bs.test(i)) + " ";
   return s;
 }
@@ -38,6 +38,7 @@ int sushi(int N, int B, vector<int> A) {
     S2 = S1;
     for (int a : A) {
       S2 |= S2 << (a * R);
+      DBG << "[" << a * R << "]\t:\t" << bitset_str(S2, B + 1) << endl;
     }
     if (S2.test(B))
       break;
@@ -66,7 +67,7 @@ int sushi(int N, int B, vector<int> A) {
 
 #ifdef DEBUG
 int main(int argc, char *argv[]) {
-  std::ifstream in("input0.txt");
+  std::ifstream in("input2.txt");
 
   int N, B;
   in >> N >> B;
