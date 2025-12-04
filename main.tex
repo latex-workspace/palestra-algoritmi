@@ -2749,16 +2749,352 @@ Il problema è chiaramente di programmazione dinamica e presenta delle soluzioni
 \begin{center}
 	\begin{tabularx}{\textwidth}{l l X}
 		\toprule
-		\sfblue{Soluzione}                                                     & \sfblue{Punteggio}           & \sfblue{Descrizione}                            \\
+		\sfblue{Soluzione}                                                     & \sfblue{Punteggio}           & \sfblue{Descrizione}                                   \\
 		\midrule
-		\ttfamily\href{run:./files/esercizi/sushi/v2}{files/esercizi/sushi/v2} & \ttfamily\color{score7} 70   & Knapsack e ricerca lineare                      \\
-		\ttfamily\href{run:./files/esercizi/sushi/v1}{files/esercizi/sushi/v1} & \ttfamily\color{score8}  84  & Soluzione "ad hoc" naive                        \\
-		\ttfamily\href{run:./files/esercizi/sushi/v3}{files/esercizi/sushi/v3} & \ttfamily\color{score9} 99   & Knapsack e ricerca esponenziale/binaria         \\
-		\ttfamily\href{run:./files/esercizi/sushi/v4}{files/esercizi/sushi/v4} & \ttfamily\color{score10} 100 & Knapsack, ricerca esponenziale/binaria e bitset \\
+		\ttfamily\href{run:./files/esercizi/sushi/v2}{files/esercizi/sushi/v2} & \ttfamily\color{score7} 70   & Knapsack e ricerca lineare                             \\
+		\ttfamily\href{run:./files/esercizi/sushi/v1}{files/esercizi/sushi/v1} & \ttfamily\color{score8}  84  & Soluzione "ad hoc" naive                               \\
+		\ttfamily\href{run:./files/esercizi/sushi/v3}{files/esercizi/sushi/v3} & \ttfamily\color{score9} 99   & Knapsack e ricerca esponenziale/binaria                \\
+		\ttfamily\href{run:./files/esercizi/sushi/v4}{files/esercizi/sushi/v4} & \ttfamily\color{score10} 100 & Knapsack, ricerca esponenziale/binaria e bitset        \\
+		\ttfamily\href{run:./files/esercizi/sushi/v4}{files/esercizi/sushi/v5} & \ttfamily\color{score10} 100 & Knapsack, ricerca esponenziale/binaria e bitset custom \\
 		\bottomrule
 	\end{tabularx}
 \end{center}
 
+Eviteremo di affrontare la soluzione "ad hoc" in quanto non permette di essere riadattada per ottenere full score. Ci concentreremo invece sulle soluzioni basate su knapsack e ricerca esponenziale/binaria.
 
+\subsubsection{Idea di base del knapsack}
+Questo problema è interamente riconducibile al problema noto del  \href{https://en.wikipedia.org/wiki/Knapsack_problem#0-1_knapsack_problem}{Knapsack 0-1}. Per riassumere rapidamente, ci vengono dati
+\begin{itemize}
+	\item Uno zaino di capienza $ B $
+	\item  $ N $ oggetti di peso $ A\left[i\right] $
+\end{itemize}
+IL problema del \textit{knapsack 0-1} consiste nel capire se è possibile riempire lo zaino con gli oggetti dati in modo tale che il peso totale sia esattamente $ B $. Ciascun oggetto può essere selezionato 0 o 1 volte
+
+\subsubsection{Knapsack e ricerca lineare}
+Nel nostro caso possiamo definire il $ k -$esimo sotto-problema come il seguente:
+\begin{itemize}
+	\item Dato un budget $ B $
+	\item Dato un numero massimo di portate per ogni piatto $ R $
+	\item Data una lista di prezzi dei diversi tipi di sushi $ A $
+\end{itemize}
+Verificare se sia possibile spendere esattamente $ B $ mangiando al più $ R $ portate di ogni piatto
+\vskip3mm
+Supponiamo di avere $ A = \left[2,3,8\right] $ e $ B = 14 $. Inizialmente chiediamoci se sia possibile raggiungere il budget con $ R=1 $, ossia massimo un pezzo di sushi per ciascun tipo
+\[
+	\begin{bmatrix}
+		   & 0 & 1 & 2 & \ldots & 13 & 14 \\
+		-1 & 1 & 0 & 0 & \ldots & 0  & 0  \\
+		2  & 0 & 0 & 1 & \ldots & 0  & 0  \\
+		3  & 0 & 0 & 1 & \ldots & 0  & 0  \\
+		8  & 0 & 0 & 1 & \ldots & 1  & 0  \\
+	\end{bmatrix}
+\]
+nell'ultima cella in basso a destra troveremo 1 nel caso in cui fosse possibile raggiungere il budget $ B $ con massimo $ R $ piatti per ogni tipo, 0 altrimenti. L'idea è di procedere aumentando $ R $ di uno alla volta fino a quando non troviamo un valore di $ R $ per cui è possibile ottenere un budget $ B $. Se non troviamo un valore di $ R $ minore di $ B $ allora significa che non è possibile ottenere il budget in alcun modo.
+\vskip3mm
+Procediamo ora con il calcolo per $ R=2 $. L'idea è la stessa, però aggiungiamo ogni tipo di piatto 2 volte; con $ A = \left[2,3,8\right] $ e $ B = 14 $ avremmo gli oggetti $ \left[2,2,3,3,8,8\right] $. Possiamo risolvere con una matrice \verb|dp| in modo analogo:
+\[
+	\begin{bmatrix}
+		   & 0 & 1 & 2 & \ldots & 13 & 14 \\
+		-1 & 1 & 0 & 0 & \ldots & 0  & 0  \\
+		2  & 0 & 0 & 1 & \ldots & 0  & 0  \\
+		3  & 0 & 0 & 1 & \ldots & 0  & 0  \\
+		8  & 0 & 0 & 1 & \ldots & 1  & 0  \\
+		2  & 0 & 0 & 1 & \ldots & 1  & 0  \\
+		3  & 0 & 0 & 1 & \ldots & 1  & 1  \\
+		8  & 0 & 0 & 1 & \ldots & 1  & 1  \\
+	\end{bmatrix}
+\]
+In questo caso la cella in basso a destra contiene 1, possiamo quindi terminare. Abbiamo ottenuto il risultato: $ R=2 $.
+\vskip3mm
+Nota bene! Per ogni nuovo valore di $ R $ non è necessario ricalcolare l'intera tabella \verb|dp|, ma è sufficiente aggiungere una portata per ciascun piatto all'ultima tabella \verb|dp| e riprendere la computazione dall'ultima riga:
+\[
+	\begin{bmatrix}
+		   & 0 & 1 & 2 & \ldots & 13 & 14 \\
+		-1 & 1 & 0 & 0 & \ldots & 0  & 0  \\
+		2  & 0 & 0 & 1 & \ldots & 0  & 0  \\
+		3  & 0 & 0 & 1 & \ldots & 0  & 0  \\
+		8  & 0 & 0 & 1 & \ldots & 1  & 0  \\
+	\end{bmatrix}
+	\rightarrow
+	\begin{bmatrix}
+		   & 0 & 1 & 2 & \ldots & 13 & 14 \\
+		-1 & 1 & 0 & 0 & \ldots & 0  & 0  \\
+		2  & 0 & 0 & 1 & \ldots & 0  & 0  \\
+		3  & 0 & 0 & 1 & \ldots & 0  & 0  \\
+		8  & 0 & 0 & 1 & \ldots & 1  & 0  \\
+		2  & 0 & 0 & 1 & \ldots & 1  & 0  \\
+		3  & 0 & 0 & 1 & \ldots & 1  & 1  \\
+		8  & 0 & 0 & 1 & \ldots & 1  & 1  \\
+	\end{bmatrix}
+\]
+Le prime righe rimangono invariate!
+\vskip3mm
+Per la computazione della matrice \verb|dp| è opportuno inoltre usare la tecnica per ridurre lo spazio: ogni volta teniamo salvate solo le ultime 2 righe della matrice, in quanto per calcolare la riga i-esima bi bastano i valori della precedente
+\vskip3mm
+\vskip3mm
+Complessità totale: $ O\left(N \cdot R \cdot B\right) = O\left(N \cdot B^2 \right) $,  siccome $ R = O\left(B\right) $
+\subsubsection*{Knapsack e ricerca esponenziale/binaria}\label{knapsack bin exp search}
+Sfortunatamente l'approccio precedente non è sufficientemente efficiente per ottenere il full score. Per questo motivo possiamo procedere con una ricerca esponenziale/binaria sul valore di $ R $. Partiamo elencando un piccolo teorema matematico, chiave per la soluzione efficiente:
+\begin{teorema}{Somma potenze di due}
+	Dato $R, k, t$ tali che:
+
+	\[
+		R=1+2+4+\ldots+2^k+t \quad 0 \leq t<2^{k+1}
+	\]
+
+	per ogni $0 \leq x \leq R$ esiste $S \subseteq\left\{1,2,4, \ldots, 2^k, t\right\}$ tale che $\operatorname{sum}(S)=x$.
+\end{teorema}\label{somma potenze di due}
+L'idea è che posso raggruppare gli oggetti del knapsack in gruppi dati dalle potenze di 2 più un fattore di "resto" $ t $. Questo perché ogni peso che potrei ottenere usando $ R $ oggetti separati, è ottenibile tramite diverse combinazioni di oggetti raggruppati per potenze di due
+\vskip3mm
+Formalmente questa proprietà si può dimostrare per induzione. Per semplicità dimostriamo il caso in cui $ t = 0 $ e poi estendiamo ad un generico $ t $
+\begin{itemize}
+	\item Caso base: $ R=2^0$: posso ottenere ogni numero $ \in \left[0, R\right] $
+	      \begin{itemize}
+		      \item $ 0 = \operatorname{sum} \left(\emptyset\right) $
+		      \item $ 1 = \operatorname{sum} \left(\left\{2^{0}\right\}\right) $
+	      \end{itemize}
+	\item Supponendo per ipotesi induttiva che la proprietà sia vera per ogni $ x < k $ allora possiamo dimostrare facilmente che il teorema vale anche per $ k $. Dato
+	      \[
+		      R = \underbracket[0.1ex]{1 + 2 + 4 + \ldots + 2^{k-1}}_{} + 2^{k}
+	      \]
+	      con le potenze $ 2^{0}, \ldots , 2^{k-1} $ posso, per ipotesi induttiva ottenere tutti i numeri fino a $           \sum_{k=0}^{k-1} 2^{k} $. Questa è una nota \textit{successione geometrica}:
+	      \[
+		      \sum_{k=0}^{k-1} 2^{k} = 2^{k} - 1
+	      \]
+	      Dunque posso ottenere i numeri in $ \left[0,2^{k}-1\right] $ con le prime $ k-1 $ potenze, mentre i numeri nel range $ \left[2^{k}, R\right] $ aggiungendo la potenza $ 2^{k} $
+	\item Per questo motivo la proprietà vale per ogni $ k \in \N $
+\end{itemize}
+Per quanto riguarda la costante $ t $ si può ragionare in maniera analoga a quanto fatto nello step induttivo. Sappiamo che per $ R = 2^{0} + \ldots  + 2^{k} $ possiamo ottenere ogni somma in $ \left[0,R\right] $ ossia in $ \left[0,2^{k+1}-1\right] $. Quindi a patto che $ t \le 2^{k+1}-1 $ possiamo ottenere ogni somma in $ \left[0, R + t\right] $ se combinando gli elementi in $ \left\{2^{0}, \ldots , 2^{k}\right\} $ con $ t $. La condizione sul range di $ t $ serve in quanto se $ t>2^{k}-1 $ non riuscirei ad ottenere i nueri in $ \left[2^{k+1}, t-1\right] $ (si creerebbe un "buco" in quanto $ t $ sarebbe troppo grande e i numeri ottenuti combinando $ \left\{2^{0}, \ldots , 2^{k}\right\} $ con $ t $ partirebbero troppo dopo quelli ottenuti esclusivamente da $ \left\{2^{0}, \ldots , 2^{k}\right\} $)
+\vskip3mm
+Per il nostro problema questo teorema è fondamentale in quanto ci permette di inserire ogni volta invece che una singola portata per ciascun tipo di sushi, un gruppo di portate dato dalle potenze di 2 più un eventuale "resto" $ t $. Questo possiamo farlo proprio perchè abbiamo la certezza per il teorema \ref{somma potenze di due} che ogni somma ottenibile con $ R $ portate è ottenibile anche con questo raggruppamento. Nel pratico inseriamo oggetti di peso $ 2^{k} \cdot A\left[i\right] $ ad ogni iterazione del knapsack. Supponendo di avere $ A = \left[2,3,6\right] $ allora gli oggetti inseriti daranno:
+\[
+	[\underbracket[0.1ex]{2,3,4}_{R=1} , \underbracket[0.1ex]{4,6,8}_{R=2}, \underbracket[0.1ex]{6,12,16}_{R=4}, , \underbracket[0.1ex]{16,24,32}_{R=8}]
+\]
+Così facendo possiamo individuare il range entro il quale $ R $ giace in maniera efficiente. In particolare, per individuare il range sono sufficienti $ O \left(\log R\right) $ iterazioni di knapsack. Una volta ottenuto il range di valori di $ R $ entro il quale giace la soluzione possiamo eseguire una ricerca binaria. Questo secondo step è reso possibile dalla costante $ t $ indicata nel teorema. Andremo ad inserire oggetti di peso $ t \cdot A\left[i\right] $. Ancora una volta siamo sicuri di poter ottenere tutte le possibili somme che potremmo ottenere inserendo ogni piatto singolarmente
+\begin{algoritmo}{Sushi exponential/binary search}
+	\begin{algorithm}[H]
+		\SetKwFunction{Max}{\Int sushi}
+		\SetKwFunction{ExponentialSearch}{exponential\_search}
+		\SetKwFunction{BinarySearch}{binary\_search}
+		\Fn{ \Max{$ \Int\ N $, $ \Int\ B $, $\Int\ A[]$}}{
+			$ R_{lower}, R_{upper}  = $ \ExponentialSearch{N, B, A}\;
+			$ R  = $ \BinarySearch{N, B, A, $ R_{lower}$ $ R_{upper} $}\;
+			\Return{$R$}\;
+		}
+	\end{algorithm}
+\end{algoritmo}
+Vediamo ora uno pseudocodice che contiene un po' di informazioni in più riguardo all'implementazione dei due tipi di ricerca
+
+\begin{algoritmo}{Sushi exponential/binary search in depth}
+	\begin{algorithm}[H]
+		\SetKwFunction{Max}{\Int sushi}
+		\SetKwFunction{ExponentialSearch}{exponential\_search}
+		\SetKwFunction{BinarySearch}{binary\_search}
+		\SetKwFunction{Swap}{swap}
+		\Fn{ \Max{$ \Int\ N $, $ \Int\ B $, $\Int\ A[]$}}{
+		$prev\_buf    \gets \New\ \Bool\ [B + 1] = \left[0,\ldots ,0\right]$\;
+		$curr\_buf    \gets \New\ \Bool\ [B + 1]= \left[0,\ldots ,0\right]$\;
+		$latest\_buf  \gets \New\ \Bool\   [B + 1]= \left[0,\ldots ,0\right]$\;
+
+		\vskip3mm
+		$ R, latest  = $ \ExponentialSearch{N, B, A}\;
+
+		\vskip3mm
+		\Comment{Lower and upper bounds for binary search of parameter $ t $}
+		$ R_{lower} \gets 1$\;
+		$ R_{upper} \gets R + 1$\;
+		\vskip3mm
+		$ R  = $ \BinarySearch{N, B, A, $ R_{lower}$, $ R_{upper} $, latest}\;
+		\Return{$R$}\;
+		}
+	\end{algorithm}
+\end{algoritmo}
+Seguono spiegazione e pseudocodice per le funzioni \verb|exponential_search| e \verb|binary_search|
+
+\begin{algoritmo}{Sushi exponential search}
+	\begin{algorithm}[H]
+		\SetKwFunction{ExponentialSearch}{exponential\_search}
+		\SetKwFunction{Swap}{swap}
+		\Fn{ $ \left(\Int, \Bool\left[\right]\right) $ \ExponentialSearch{$ \Int\ N $, $ \Int\ B $, $\Int\ A[]$}}{
+
+			$prev\_buf\left[0\right] \gets 1 $\;
+			$block\_size \gets 1$ \;
+
+			\vskip3mm
+			\Comment{Ricerca esponenziale del range in cui giace $ R $}
+			\While{\KwTrue}{
+				$latest \gets prev\_dp$ \Comment*[t]{Deep copy}
+
+				\For{$i \gets 0$ \KwTo $N-1$}{
+					$ weight \gets block\_size \cdot A[i]$\;
+					\For{$j \gets 1$ \KwTo $B$}{
+						$opt_1 \gets prev\_dp[j]$\;
+						$opt_2 \gets $ \leIf{$ weight > j $}{$0$}{$ prev\_dp[j - weight] $}
+						$curr\_dp[j] \gets opt_1\ \Or\ opt_2$\;
+					}
+					\Swap{$ prev\_dp $, $ curr\_dp $}\;
+				}
+				\vskip3mm
+				\Comment{Check if capacity $B$ can be formed}
+				\If{$ prev\_dp[B]$}{
+					\Return{$ \left(R, latest\right) $}\;
+				}
+				\ElseIf{$2 \cdot  block\_size -1 \geq B$}{
+					\Return{ $\left(-1, \left[\right]\right)$}\;
+				}
+				$block\_size \gets 2 \cdot block\_size$ \;
+			}
+
+			\vskip3mm
+		}
+	\end{algorithm}
+\end{algoritmo}
+Questa funzione ritorna $ R = \sum_{i=0}^{k} 2^{i} $ dove $ k $ è il primo valore che risolve il problema. Intuitivamente aggiungiamo $ 2^{i} $ a $ R $ fino a quanto non riusciamo a risolvere il problema. Dunque otterremo un \textit{upper\_bound} e \textit{lower\_bound} della soluzione. Il vettore latest contiene i valori dell'ultima iterazione del knapsack per $ R = 2^{0} + \ldots + 2^{i-1} $, in maniera tale che non dobbiamo ricalsolarli per lo step di binary search.
+
+\begin{algoritmo}{Sushi binary search}
+	\begin{algorithm}[H]
+		\SetKwFunction{ExponentialSearch}{exponential\_search}
+		\SetKwFunction{BinarySearch}{binary\_search}
+		\SetKwFunction{Swap}{swap}
+		\Fn{ $ \left(\Int, \Bool\left[\right]\right) $ \BinarySearch{$ \Int\ N $, $ \Int\ B $, $\Int\ A[]$, $ \Int\ R_{lower} $, $\Int\ R_{upper} $, $ \Bool\ latest\left[\right] $ }}{
+
+			\While{$ lower\_bound < upper\_bound $}{
+				$prev\_dp \gets latest$ \Comment*[r]{Deep copy}
+
+				$mid \gets \left\lfloor \frac{lower\_bound + upper\_bound}{2} \right\rfloor $\;
+
+				\For{$i \gets 0$ \KwTo $N-1$}{
+					$weight \gets mid \cdot A[i]$\;
+					\For{$j \gets 1$ \KwTo $B$}{
+						$opt_1 \gets prev\_dp[j]$\;
+						$opt_2 \gets$ \leIf{$ weight > j $}{$0$}{$ prev\_dp[j - weight] $}
+						$curr\_dp[j] \gets opt_1\ \Or\ opt_2$\;
+					}
+					\Swap{$ prev\_dp $, $ curr\_dp $}\;
+				}
+
+				\If{$ prev\_dp[B] $}{
+					$upper\_bound \gets mid$\;
+				}
+				\Else{
+					$lower\_bound \gets mid + 1$\;
+				}
+			}
+			\Return{ $block\_size - 1 + lower\_bound$ }\;
+		}
+	\end{algorithm}
+\end{algoritmo}
+In questo caso procediamo secondo una ricerca binaria per valori di $ R $ fra \textit{lower\_bound} e \textit{upper\_bound}, ricercando, di fatto, il valore di $ t $ relativo al teorema \ref{somma potenze di due}. Questo è ancora una volta giustificato dal fatto che prendendo il set di potenze di 2 con $ t $ $ \left\{2^{0}, \ldots , 2^{k}, t\right\} $ possiamo ottenere tutti i numeri naturali in $ \left[0, R_{upper}\right] $, perciò non stiamo "trascurando" possibili combinazioni
+\vskip3mm
+Abbamo dunque migliorato significamente la complessità, in quanto ora è sufficiente applicare il knapsack $ O\left(\log \left(n\right)\right) $ volte. Applicando questo algoritmo abbiamo ottenuto la seguente complessità:
+\begin{center}
+	\begin{tabular}{l l}
+		\toprule
+		Step               & Complessità                                                                       \\
+		\midrule
+		Exponential search & $ O\left(B  N \log \left(R\right)\right)  = O\left(BN \log \left(B\right)\right)$ \\
+		Binary search      & $ O\left(B  N \log \left(R\right)\right)  = O\left(BN \log \left(B\right)\right)$ \\
+		\bottomrule
+	\end{tabular}
+\end{center}
+Complessità: $O\left(BN \log \left(B\right)\right)$
+
+\subsubsection*{Knapsack e ricerca esponenziale/binaria con bitset}
+Sfortunatamente la soluzione descritta in \ref{knapsack bin exp search} non è ancora sufficiente per ottenere un full score. Possiamo ulteriormente ottimizzare il calcolo di knapsack utilizzando un \verb|bitset|. Questa struttura dati è di fatto un'\verb|hash_set| di dimensione statica, le cui chiavi sono interi nel range $ \left[0, n\right] $, dove $ n $ è la dimensione del bitset. Internamente viene memorizzato un array di \verb|uint64_t|, dove ogni bit viene acceso singolarmente tramite operazione bitwise.
+\vskip3mm
+In particolare ci serve conoscere le operazioni di \textit{bitwise or} e \textit{shift logico}
+\vskip3mm
+\sfblue{Bitwise or}
+\vskip3mm
+Supponiamo di avere un insieme di bit dato da
+\begin{align*}
+	S_1       & = \left[0,0,1,0,1,0,0,0,1\right] \\
+	S_2       & = \left[1,0,0,1,0,0,1,0,0\right] \\
+	S_1 | S_2 & = \left[1,0,1,1,1,0,1,0,1\right]
+\end{align*}
+L'idea è dunque quella di applicare l'or logico per ogni bit ("\textit{bit a bit}")
+
+\vskip3mm
+\sfblue{Shift logico}
+Lo shift logico è un'operazione che permette di spostare tutti i bit di un certo numero di posizioni a sinistra o a destra. Ad esempio
+\begin{align*}
+	S_1       & = \left[0,0,1,0,1,0,0,0,1\right]  \\
+	S_1 << 2  & = \left[1,0,1,0,0,0,1,0,0\right]  \\
+	S_1  >> 3 & = \left[0,0,0, 0,0,1,0,1,0\right] \\
+\end{align*}
+Quindi sposto i bit a sinistra/destra di un certo numero di posizioni, riempiendo con zeri le posizioni vuote
+\vskip3mm
+
+Ora analizziamo l'operazione fondamendale del knapsack, ossia quella in cui calcoliamo la $ i- $esima fila della tabella:
+\[
+	curr\_dp\left[j\right] = prev\_dp\left[j\right] ||\ prev\_dp\left[j - weight\right]
+\]
+Questo può essere interpretato come segue: la cella $ i- $esima del vettore dp è accesa se la cella $ i $ del vettore \textit{prev\_dp} è accesa oppure se è accessa la cella \textit{weight} celle più avanti. Questo può essere tradotto con la seguente operazione bitwise
+\[
+	curr\_dp\left[j\right] = prev\_dp\left[j\right] ||\ prev\_dp << weight
+\]
+Dunque il calcolo del knapsack, sfruttando i bitset diventa il seguente:
+\vskip3mm
+
+\begin{algorithm}[H]
+	$S2 = S1$\;
+	\For{$\Int\ a : A$}{
+		$weight \gets a * R $\;
+		$S2 |= S2 << weight$\;
+	}
+\end{algorithm}
+Dal punto di vista teorico, questa funzione ha la stessa complessità della versione senza \verb|bitset|, tuttavia è 64 volte inferiore:
+\begin{center}
+	\begin{tabular}{l l}
+		\toprule
+		Con \verb|bitset|               & Senza \verb|bitset|  \\
+		\midrule
+		$ O\left(\frac{NB}{64}\right) $ & $ O\left(NB\right) $ \\
+		\bottomrule
+	\end{tabular}
+\end{center}
+
+Applicando questa ottimizzazione possiamo ottenere un full score! L'implementazione in \verb|cpp| è disponibile in \texttt{\href{run:./files/esercizi/sushi/v4}{files/esercizi/sushi/v4}}
+
+Possiamo entrare in classifica utilizzando un'implementazione custom del \verb|bitset|. In particolare, l'operazione:
+\begin{center}
+	\ttfamily S2 |= S2 << (a * R)
+\end{center}
+risulta inefficiente per il fatto che \verb|S2 << (a * R)| crea un nuovo \verb|bitset|, eseguendo una deep copy. Tuttavia l'intera operazione può essere eseguita in place.
+
+\begin{lstlisting}[language = cpp, frame = none]
+template <size_t N> class masked_bitset {
+  static constexpr size_t num_words = size_t(N + 63) / 64;
+  uint64_t buf[num_words]{};
+
+public:
+  // Set ith bit
+  void set(size_t i) { buf[i / 64] |= (1ULL << (i % 64)); }
+
+  // Unset ith bit
+  void unset(size_t i) { buf[i / 64] &= ~(1ULL << (i % 64)); }
+
+  // Test ith bit
+  bool test(size_t i) const { return (buf[i / 64] & (1ULL << (i % 64))) != 0; }
+
+  void offset_or(size_t offset) {
+    // Basically does this: *this |= (*this << offset);
+    if (offset >= N)
+      return;
+    size_t word_shift = offset / 64;
+    size_t bit_shift = offset % 64;
+    bool zero_shif_correction = bit_shift == 0;
+    for (size_t i = num_words; i-- > word_shift + 1;) {
+      // std::cout << i << std::endl;
+      uint64_t high = buf[i - word_shift] << bit_shift;
+      uint64_t low =
+          buf[i - word_shift - 1 + zero_shif_correction] >> (64 - bit_shift);
+      buf[i] |= (high | low);
+    }
+
+    buf[word_shift] |= buf[0] << bit_shift;
+  }
+\end{lstlisting}
+In particolare l'operazione 	\texttt{S2 |= S2 << (a * R)} è implementata in place dal metodo \verb|offset_or|. Questo piccolo accorgimento ci permette raggiungere la prima posizione in classifica (almeno per il momento). Questa soluzione è implementata in \texttt{\href{run:./files/esercizi/sushi/v5}{files/esercizi/sushi/v5}}
 
 \end{document}
